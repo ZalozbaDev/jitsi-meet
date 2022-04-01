@@ -1,19 +1,41 @@
 // @flow
 
-import { ColorPalette } from '../../../base/styles';
+import BaseTheme from '../../../base/ui/components/BaseTheme';
 
-const SECONDARY_COLOR = '#B8C7E0';
-
-export const ENABLED_THUMB_COLOR = ColorPalette.blueHighlight;
-export const ENABLED_TRACK_COLOR = ColorPalette.blue;
-export const DISABLED_THUMB_COLOR = ColorPalette.darkGrey;
+const SECONDARY_COLOR = BaseTheme.palette.border04;
 
 export default {
     button: {
         alignItems: 'center',
         borderRadius: 4,
-        marginVertical: 4,
-        paddingVertical: 8
+        marginVertical: BaseTheme.spacing[1],
+        paddingVertical: BaseTheme.spacing[2]
+    },
+
+    lobbyChatWrapper: {
+        backgroundColor: BaseTheme.palette.ui01,
+        alignItems: 'stretch',
+        flexDirection: 'column',
+        justifyItems: 'center',
+        height: '100%'
+    },
+
+    lobbyChatHeader: {
+        flexDirection: 'row',
+        padding: 20
+    },
+
+    lobbyChatTitle: {
+        color: '#fff',
+        fontSize: 20,
+        fontWeight: 'bold',
+        flexShrink: 1
+    },
+
+    lobbyChatCloseButton: {
+        fontSize: 20,
+        marginLeft: 20,
+        color: '#fff'
     },
 
     contentWrapper: {
@@ -33,7 +55,7 @@ export default {
         fontSize: 18,
         fontWeight: 'bold',
         margin: 'auto',
-        marginVertical: 24,
+        marginVertical: BaseTheme.spacing[3],
         textAlign: 'center'
     },
 
@@ -61,7 +83,7 @@ export default {
     },
 
     fieldError: {
-        color: ColorPalette.warning,
+        color: BaseTheme.palette.warning07,
         fontSize: 10
     },
 
@@ -165,7 +187,7 @@ export default {
 
     lobbySwitchContainer: {
         flexDirection: 'column',
-        marginTop: 16
+        marginTop: BaseTheme.spacing[2]
     },
 
     lobbySwitchIcon: {

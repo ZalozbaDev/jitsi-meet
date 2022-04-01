@@ -10,6 +10,7 @@ import {
     CONFERENCE_FAILED,
     CONFERENCE_JOINED,
     CONFERENCE_LEFT,
+    CONFERENCE_LOCAL_SUBJECT_CHANGED,
     CONFERENCE_SUBJECT_CHANGED,
     CONFERENCE_TIMESTAMP_CHANGED,
     CONFERENCE_WILL_JOIN,
@@ -55,6 +56,9 @@ ReducerRegistry.register(
 
         case CONFERENCE_SUBJECT_CHANGED:
             return set(state, 'subject', action.subject);
+
+        case CONFERENCE_LOCAL_SUBJECT_CHANGED:
+            return set(state, 'localSubject', action.localSubject);
 
         case CONFERENCE_TIMESTAMP_CHANGED:
             return set(state, 'conferenceTimestamp', action.conferenceTimestamp);
@@ -133,7 +137,7 @@ function _authStatusChanged(state, { authEnabled, authLogin }) {
  */
 function _conferenceFailed(state, { conference, error }) {
     // The current (similar to getCurrentConference in
-    // base/conference/functions.js) conference which is joining or joined:
+    // base/conference/functions.any.js) conference which is joining or joined:
     const conference_ = state.conference || state.joining;
 
     if (conference_ && conference_ !== conference) {

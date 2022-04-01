@@ -1,9 +1,9 @@
 // @flow
 
 import { makeStyles } from '@material-ui/styles';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 import { rejectParticipantAudio } from '../../../av-moderation/actions';
 import useContextMenu from '../../../base/components/context-menu/useContextMenu';
@@ -15,7 +15,7 @@ import {
 } from '../../../base/participants';
 import { connect } from '../../../base/redux';
 import { normalizeAccents } from '../../../base/util/strings';
-import { getBreakoutRooms, getCurrentRoomId } from '../../../breakout-rooms/functions';
+import { getBreakoutRooms, getCurrentRoomId, isInBreakoutRoom } from '../../../breakout-rooms/functions';
 import { showOverflowDrawer } from '../../../toolbox/functions';
 import { muteRemote } from '../../../video-menu/actions.any';
 import { getSortedParticipantIds, shouldRenderInviteButton } from '../../functions';
@@ -45,8 +45,10 @@ const useStyles = makeStyles(theme => {
 type Props = {
     currentRoom: ?Object,
     participantsCount: number,
-    showInviteButton: boolean,
     overflowDrawer: boolean,
+    searchString: string,
+    setSearchString: Function,
+    showInviteButton: boolean,
     sortedParticipantIds: Array<string>
 };
 
@@ -64,11 +66,12 @@ function MeetingParticipants({
     currentRoom,
     overflowDrawer,
     participantsCount,
+    searchString,
+    setSearchString,
     showInviteButton,
     sortedParticipantIds = []
 }: Props) {
     const dispatch = useDispatch();
-    const [ searchString, setSearchString ] = useState('');
     const { t } = useTranslation();
 
     const [ lowerMenu, , toggleMenu, menuEnter, menuLeave, raiseContext ] = useContextMenu();
@@ -89,6 +92,7 @@ function MeetingParticipants({
     const youText = t('chat.you');
     const askUnmuteText = t('participantsPane.actions.askUnmute');
     const muteParticipantButtonText = t('dialog.muteParticipantButton');
+    const isBreakoutRoom = useSelector(isInBreakoutRoom);
 
     const styles = useStyles();
 
@@ -104,10 +108,12 @@ function MeetingParticipants({
             {showInviteButton && <InviteButton />}
             <ClearableInput
                 onChange = { setSearchString }
-                placeholder = { t('participantsPane.search') } />
+                placeholder = { t('participantsPane.search') }
+                value = { searchString } />
             <div>
                 <MeetingParticipantItems
                     askUnmuteText = { askUnmuteText }
+                    isInBreakoutRoom = { isBreakoutRoom }
                     lowerMenu = { lowerMenu }
                     muteAudio = { muteAudio }
                     muteParticipantButtonText = { muteParticipantButtonText }

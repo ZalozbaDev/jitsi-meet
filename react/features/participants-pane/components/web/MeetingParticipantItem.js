@@ -19,12 +19,12 @@ import {
     isParticipantAudioMuted,
     isParticipantVideoMuted
 } from '../../../base/tracks';
-import { normalizeAccents } from '../../../base/util/strings';
 import { ACTION_TRIGGER, type MediaState, MEDIA_STATE } from '../../constants';
 import {
     getParticipantAudioMediaState,
     getParticipantVideoMediaState,
-    getQuickActionButtonType
+    getQuickActionButtonType,
+    participantMatchesSearch
 } from '../../functions';
 
 import ParticipantActionEllipsis from './ParticipantActionEllipsis';
@@ -117,6 +117,11 @@ type Props = {
     isHighlighted: boolean,
 
     /**
+     * Whether or not the local participant is in a breakout room.
+     */
+    isInBreakoutRoom: boolean,
+
+    /**
      * Callback used to open a confirmation dialog for audio muting.
      */
     muteAudio: Function,
@@ -189,6 +194,7 @@ function MeetingParticipantItem({
     _videoMediaState,
     askUnmuteText,
     isHighlighted,
+    isInBreakoutRoom,
     muteAudio,
     muteParticipantButtonText,
     onContextMenu,
@@ -261,13 +267,15 @@ function MeetingParticipantItem({
 
             {!overflowDrawer && !_participant?.isFakeParticipant
                 && <>
-                    <ParticipantQuickAction
-                        askUnmuteText = { askToUnmuteText }
-                        buttonType = { _quickActionButtonType }
-                        muteAudio = { muteAudio }
-                        muteParticipantButtonText = { muteParticipantButtonText }
-                        participantID = { _participantID }
-                        participantName = { _displayName } />
+                    {!isInBreakoutRoom && (
+                        <ParticipantQuickAction
+                            askUnmuteText = { askToUnmuteText }
+                            buttonType = { _quickActionButtonType }
+                            muteAudio = { muteAudio }
+                            muteParticipantButtonText = { muteParticipantButtonText }
+                            participantID = { _participantID }
+                            participantName = { _displayName } />
+                    )}
                     <ParticipantActionEllipsis
                         accessibilityLabel = { participantActionEllipsisLabel }
                         onClick = { onContextMenu } />
@@ -300,22 +308,7 @@ function _mapStateToProps(state, ownProps): Object {
 
     const _displayName = getParticipantDisplayName(state, participant?.id);
 
-    let _matchesSearch = false;
-    const names = normalizeAccents(_displayName)
-        .toLowerCase()
-        .split(' ');
-    const lowerCaseSearchString = searchString.toLowerCase();
-
-    if (lowerCaseSearchString === '') {
-        _matchesSearch = true;
-    } else {
-        for (const name of names) {
-            if (name.startsWith(lowerCaseSearchString)) {
-                _matchesSearch = true;
-                break;
-            }
-        }
-    }
+    const _matchesSearch = participantMatchesSearch(participant, searchString);
 
     const _isAudioMuted = isParticipantAudioMuted(participant, state);
     const _isVideoMuted = isParticipantVideoMuted(participant, state);

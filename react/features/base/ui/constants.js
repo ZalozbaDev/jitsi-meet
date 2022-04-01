@@ -7,8 +7,10 @@
  */
 export const commonClassName = {
     emptyList: 'empty-list',
+    muteDialog: 'mute-dialog',
     overflowMenuItem: 'overflow-menu-item',
     overflowMenuItemIcon: 'overflow-menu-item-icon',
+    participantAvatar: 'participant-avatar',
     toolboxIcon: 'toolbox-icon',
     toolboxButton: 'toolbox-button',
     toolboxContentItems: 'toolbox-content-items'
@@ -28,6 +30,25 @@ export const commonStyles = (theme: Object) => {
             listStyleType: 'none',
             margin: 0,
             padding: 0
+        },
+        [commonClassName.muteDialog]: {
+            '& .separator-line': {
+                margin: `${theme.spacing(4)}px 0 ${theme.spacing(4)}px -20px`,
+                padding: '0 20px',
+                width: '100%',
+                height: '1px',
+                background: '#5E6D7A'
+            },
+
+            '& .control-row': {
+                display: 'flex',
+                justifyContent: 'space-between',
+                marginTop: `${theme.spacing(3)}px`,
+
+                '& label': {
+                    fontSize: '14px'
+                }
+            }
         },
         [commonClassName.overflowMenuItem]: {
             alignItems: 'center',
@@ -95,6 +116,9 @@ export const commonStyles = (theme: Object) => {
                 height: 20,
                 width: 20
             }
+        },
+        [commonClassName.participantAvatar]: {
+            margin: `${theme.spacing(2)}px ${theme.spacing(3)}px ${theme.spacing(2)}px 0`
         },
         [commonClassName.toolboxIcon]: {
             display: 'flex',

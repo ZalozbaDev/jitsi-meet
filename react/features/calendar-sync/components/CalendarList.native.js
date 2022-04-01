@@ -1,7 +1,11 @@
 // @flow
 
 import React from 'react';
-import { Text, TouchableOpacity, View } from 'react-native';
+import {
+    Text,
+    TouchableOpacity,
+    View
+} from 'react-native';
 
 import { translate } from '../../base/i18n';
 import { AbstractPage } from '../../base/react';

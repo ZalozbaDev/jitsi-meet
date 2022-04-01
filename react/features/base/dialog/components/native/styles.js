@@ -20,8 +20,6 @@ export const MD_FONT_SIZE = 16;
 export const MD_ITEM_HEIGHT = 48;
 export const MD_ITEM_MARGIN_PADDING = 16;
 
-export const PLACEHOLDER_COLOR = ColorPalette.lightGrey;
-
 /**
  * The React {@code Component} styles of {@code BottomSheet}. These have
  * been implemented as per the Material Design guidelines:
@@ -56,6 +54,17 @@ export const bottomSheetStyles = {
     }
 };
 
+export default {
+    dialogButton: {
+        ...BaseTheme.typography.labelButton
+    },
+
+    destructiveDialogButton: {
+        ...BaseTheme.typography.labelButton,
+        color: BaseTheme.palette.actionDanger
+    }
+};
+
 export const brandedDialog = {
 
     /**
@@ -64,10 +73,6 @@ export const brandedDialog = {
      */
     boldDialogText: {
         fontWeight: 'bold'
-    },
-
-    buttonFarLeft: {
-        borderBottomLeftRadius: BORDER_RADIUS
     },
 
     buttonFarRight: {
@@ -80,21 +85,6 @@ export const brandedDialog = {
         flexDirection: 'row'
     },
 
-    closeWrapper: {
-        padding: BoxModel.padding
-    },
-
-    dialogTitle: {
-        fontWeight: 'bold',
-        paddingLeft: BoxModel.padding * 2
-    },
-
-    headerWrapper: {
-        alignItems: 'center',
-        flexDirection: 'row',
-        justifyContent: 'space-between'
-    },
-
     mainWrapper: {
         alignSelf: 'stretch',
         padding: BoxModel.padding * 2,
@@ -102,15 +92,6 @@ export const brandedDialog = {
         // The added bottom padding is to compensate the empty space around the
         // close icon.
         paddingBottom: BoxModel.padding * 3
-    },
-
-    overlay: {
-        ...StyleSheet.absoluteFillObject,
-        alignItems: 'center',
-        backgroundColor: 'rgba(127, 127, 127, 0.6)',
-        flexDirection: 'row',
-        justifyContent: 'center',
-        padding: 30
     },
 
     overlayTouchable: {
@@ -146,19 +127,11 @@ const brandedDialogIconStyle = {
 };
 
 export const inputDialog = {
-    bottomField: {
-        marginBottom: 0
-    },
-
-    fieldWrapper: {
-        ...brandedDialog.mainWrapper,
-        paddingBottom: BoxModel.padding * 2
-    },
-
     formMessage: {
         alignSelf: 'flex-start',
         fontStyle: 'italic',
-        margin: BoxModel.margin
+        fontWeight: 'bold',
+        marginTop: BaseTheme.spacing[3]
     }
 };
 
@@ -290,11 +263,12 @@ ColorSchemeRegistry.register('Dialog', {
     },
 
     text: {
-        ...brandedDialogText
+        ...brandedDialogText,
+        color: BaseTheme.palette.text01
     },
 
     topBorderContainer: {
-        borderTopColor: schemeColor('border'),
+        borderTopColor: BaseTheme.palette.dividerColor,
         borderTopWidth: 1
     }
 });

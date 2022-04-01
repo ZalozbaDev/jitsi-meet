@@ -1,15 +1,20 @@
 #sideToolbarContainer {
     background-color: $chatBackgroundColor;
-    box-sizing: border-box;
-    color: #FFF;
-    height: 100%;
-    position: absolute;
-    top: 0;
+    flex-shrink: 0;
+    overflow: hidden;
+    position: relative;
+    transition: width .16s ease-in-out;
     width: $sidebarWidth;
     z-index: $sideToolbarContainerZ;
 
     @media (max-width: 580px) {
-        width: 100%;
+        height: 100vh;
+        height: -webkit-fill-available;
+        left: 0;
+        position: fixed;
+        right: 0;
+        top: 0;
+        width: auto;
     }
 }
 
@@ -84,6 +89,10 @@
             cursor: pointer;
             fill: white;
         }
+    }
+
+    &.lobby-chat-recipient {
+        background-color: $chatLobbyMessageBackgroundColor;
     }
 }
 
@@ -455,6 +464,9 @@
             &.privatemessage {
                 background-color: $chatPrivateMessageBackgroundColor;
             }
+            &.lobbymessage {
+                background-color: $chatLobbyMessageBackgroundColor;
+            }
         }
 
         .display-name {
@@ -494,6 +506,10 @@
                 justify-content: center;
                 padding: 5px;
 
+                &.lobbychatmessageactions {
+                    border-left-color: $chatLobbyActionsSeparatorColor;
+                }
+
                 .toolbox-icon {
                     cursor: pointer;
                 }
@@ -510,6 +526,9 @@
 
         &.privatemessage {
             background-color: $chatPrivateMessageBackgroundColor;
+        }
+        &.lobbymessage {
+            background-color: $chatLobbyMessageBackgroundColor;
         }
     }
 }

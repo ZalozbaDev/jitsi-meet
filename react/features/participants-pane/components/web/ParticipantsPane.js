@@ -9,11 +9,12 @@ import { translate } from '../../../base/i18n';
 import { Icon, IconClose, IconHorizontalPoints } from '../../../base/icons';
 import { isLocalParticipantModerator } from '../../../base/participants';
 import { connect } from '../../../base/redux';
-import { AddBreakoutRoomButton } from '../../../breakout-rooms/components/web/AddBreakoutRoomButton';
-import { RoomList } from '../../../breakout-rooms/components/web/RoomList';
+import { getBreakoutRoomsConfig } from '../../../breakout-rooms/functions';
 import { MuteEveryoneDialog } from '../../../video-menu/components/';
 import { close } from '../../actions';
-import { classList, findAncestorByClass, getParticipantsPaneOpen } from '../../functions';
+import { findAncestorByClass, getParticipantsPaneOpen } from '../../functions';
+import { AddBreakoutRoomButton } from '../breakout-rooms/components/web/AddBreakoutRoomButton';
+import { RoomList } from '../breakout-rooms/components/web/RoomList';
 
 import FooterButton from './FooterButton';
 import { FooterContextMenu } from './FooterContextMenu';
@@ -75,6 +76,11 @@ type State = {
      * Indicates if the footer context menu is open.
      */
     contextOpen: boolean,
+
+    /**
+     * Participants search string.
+     */
+    searchString: string
 };
 
 const styles = theme => {
@@ -152,7 +158,8 @@ class ParticipantsPane extends Component<Props, State> {
         super(props);
 
         this.state = {
-            contextOpen: false
+            contextOpen: false,
+            searchString: ''
         };
 
         // Bind event handlers so they are only bound once per instance.
@@ -162,6 +169,7 @@ class ParticipantsPane extends Component<Props, State> {
         this._onMuteAll = this._onMuteAll.bind(this);
         this._onToggleContext = this._onToggleContext.bind(this);
         this._onWindowClickListener = this._onWindowClickListener.bind(this);
+        this.setSearchString = this.setSearchString.bind(this);
     }
 
 
@@ -197,7 +205,7 @@ class ParticipantsPane extends Component<Props, State> {
             classes,
             t
         } = this.props;
-        const { contextOpen } = this.state;
+        const { contextOpen, searchString } = this.state;
 
         // when the pane is not open optimize to not
         // execute the MeetingParticipantList render for large list of participants
@@ -206,7 +214,7 @@ class ParticipantsPane extends Component<Props, State> {
         }
 
         return (
-            <div className = { classList('participants_pane', !_paneOpen && 'participants_pane--closed') }>
+            <div className = 'participants_pane'>
                 <div className = 'participants_pane-content'>
                     <div className = { classes.header }>
                         <div
@@ -224,8 +232,10 @@ class ParticipantsPane extends Component<Props, State> {
                     <div className = { classes.container }>
                         <LobbyParticipants />
                         <br className = { classes.antiCollapse } />
-                        <MeetingParticipants />
-                        {_isBreakoutRoomsSupported && <RoomList />}
+                        <MeetingParticipants
+                            searchString = { searchString }
+                            setSearchString = { this.setSearchString } />
+                        {_isBreakoutRoomsSupported && <RoomList searchString = { searchString } />}
                         {_showAddRoomButton && <AddBreakoutRoomButton />}
                     </div>
                     {_showFooter && (
@@ -253,6 +263,20 @@ class ParticipantsPane extends Component<Props, State> {
                 </div>
             </div>
         );
+    }
+
+    setSearchString: (string) => void;
+
+    /**
+     * Sets the search string.
+     *
+     * @param {string} newSearchString - The new search string.
+     * @returns {void}
+     */
+    setSearchString(newSearchString) {
+        this.setState({
+            searchString: newSearchString
+        });
     }
 
     _onClosePane: () => void;
@@ -350,7 +374,7 @@ class ParticipantsPane extends Component<Props, State> {
  */
 function _mapStateToProps(state: Object) {
     const isPaneOpen = getParticipantsPaneOpen(state);
-    const { hideAddRoomButton } = state['features/base/config'];
+    const { hideAddRoomButton } = getBreakoutRoomsConfig(state);
     const { conference } = state['features/base/conference'];
 
     // $FlowExpectedError

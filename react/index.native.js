@@ -1,5 +1,8 @@
 // @flow
 
+// https://github.com/software-mansion/react-native-gesture-handler/issues/320#issuecomment-443815828
+import 'react-native-gesture-handler';
+
 // Apply all necessary polyfills as early as possible to make sure anything imported henceforth
 // sees them.
 import 'react-native-get-random-values';
@@ -12,7 +15,6 @@ import { App } from './features/app/components';
 import { _initLogging } from './features/base/logging/functions';
 import JitsiThemePaperProvider
     from './features/base/ui/components/JitsiThemeProvider';
-import { IncomingCallApp } from './features/mobile/incoming-call';
 
 declare var __DEV__;
 
@@ -76,6 +78,3 @@ if (!__DEV__) {
 
 // Register the main/root Component of JitsiMeetView.
 AppRegistry.registerComponent('App', () => Root);
-
-// Register the main/root Component of IncomingCallView.
-AppRegistry.registerComponent('IncomingCallApp', () => IncomingCallApp);

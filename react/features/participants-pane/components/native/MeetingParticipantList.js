@@ -1,19 +1,19 @@
 // @flow
 
 import React, { PureComponent } from 'react';
-import { FlatList, Text, View } from 'react-native';
+import { FlatList } from 'react-native';
 import { Button, withTheme } from 'react-native-paper';
 
 import { translate } from '../../../base/i18n';
 import { Icon, IconInviteMore } from '../../../base/icons';
 import { getLocalParticipant, getParticipantCountWithFake, getRemoteParticipants } from '../../../base/participants';
 import { connect } from '../../../base/redux';
-import { normalizeAccents } from '../../../base/util/strings';
 import { getBreakoutRooms, getCurrentRoomId } from '../../../breakout-rooms/functions';
 import { doInvitePeople } from '../../../invite/actions.native';
-import { shouldRenderInviteButton } from '../../functions';
+import { participantMatchesSearch, shouldRenderInviteButton } from '../../functions';
 
 import ClearableInput from './ClearableInput';
+import CollapsibleList from './CollapsibleList';
 import MeetingParticipantItem from './MeetingParticipantItem';
 import styles from './styles';
 
@@ -51,9 +51,29 @@ type Props = {
     _sortedRemoteParticipants: Map<string, string>,
 
     /**
+     * List of breakout rooms that were created.
+     */
+    breakoutRooms: Array,
+
+    /**
      * The redux dispatch function.
      */
     dispatch: Function,
+
+    /**
+     * List of participants waiting in lobby.
+     */
+    lobbyParticipants: Array,
+
+    /**
+     * Participants search string.
+     */
+    searchString: string,
+
+    /**
+     * Function to update the search string.
+     */
+    setSearchString: Function,
 
     /**
      * Translation function.
@@ -66,14 +86,10 @@ type Props = {
     theme: Object
 }
 
-type State = {
-    searchString: string
-};
-
 /**
  *  The meeting participant list component.
  */
-class MeetingParticipantList extends PureComponent<Props, State> {
+class MeetingParticipantList extends PureComponent<Props> {
 
     /**
      * Creates new MeetingParticipantList instance.
@@ -82,10 +98,6 @@ class MeetingParticipantList extends PureComponent<Props, State> {
      */
     constructor(props: Props) {
         super(props);
-
-        this.state = {
-            searchString: ''
-        };
 
         this._keyExtractor = this._keyExtractor.bind(this);
         this._onInvite = this._onInvite.bind(this);
@@ -139,27 +151,10 @@ class MeetingParticipantList extends PureComponent<Props, State> {
      * @returns {ReactElement}
      */
     _renderParticipant({ item/* , index, separators */ }) {
-        const { _localParticipant, _remoteParticipants } = this.props;
-        const { searchString } = this.state;
+        const { _localParticipant, _remoteParticipants, searchString } = this.props;
         const participant = item === _localParticipant?.id ? _localParticipant : _remoteParticipants.get(item);
-        const displayName = participant?.name || '';
 
-        if (displayName) {
-            const names = normalizeAccents(displayName)
-                .toLowerCase()
-                .split(' ');
-            const lowerCaseSearch = normalizeAccents(searchString).toLowerCase();
-
-            for (const name of names) {
-                if (lowerCaseSearch === '' || name.startsWith(lowerCaseSearch)) {
-                    return (
-                        <MeetingParticipantItem
-                            key = { item }
-                            participant = { participant } />
-                    );
-                }
-            }
-        } else if (displayName === '' && searchString === '') {
+        if (participantMatchesSearch(participant, searchString)) {
             return (
                 <MeetingParticipantItem
                     key = { item }
@@ -179,9 +174,7 @@ class MeetingParticipantList extends PureComponent<Props, State> {
      * @returns {void}
      */
     _onSearchStringChange(text: string) {
-        this.setState({
-            searchString: text
-        });
+        this.props.setSearchString(text);
     }
 
     /**
@@ -197,19 +190,34 @@ class MeetingParticipantList extends PureComponent<Props, State> {
             _participantsCount,
             _showInviteButton,
             _sortedRemoteParticipants,
+            breakoutRooms,
+            lobbyParticipants,
             t
         } = this.props;
+        const title = _currentRoom?.name
+
+            // $FlowExpectedError
+            ? `${_currentRoom.name} (${_participantsCount})`
+            : t('participantsPane.headings.participantsList',
+                { count: _participantsCount });
+
+        // Regarding the fact that we have 3 sections, we apply
+        // a certain height percentage for every section in order for all to fit
+        // inside the participants pane container
+        // If there are only meeting participants available,
+        // we take the full container height
+        const onlyMeetingParticipants
+            = breakoutRooms?.length === 0 && lobbyParticipants.length === 0;
+        const containerStyle
+            = onlyMeetingParticipants
+                ? styles.meetingListFullContainer : styles.meetingListContainer;
+        const finalContainerStyle
+            = _participantsCount > 3 && containerStyle;
 
         return (
-            <View
-                style = { styles.meetingListContainer }>
-                <Text style = { styles.meetingListDescription }>
-                    {_currentRoom?.name
-
-                        // $FlowExpectedError
-                        ? `${_currentRoom.name} (${_participantsCount})`
-                        : t('participantsPane.headings.participantsList', { count: _participantsCount })}
-                </Text>
+            <CollapsibleList
+                containerStyle = { finalContainerStyle }
+                title = { title } >
                 {
                     _showInviteButton
                     && <Button
@@ -230,11 +238,10 @@ class MeetingParticipantList extends PureComponent<Props, State> {
                     horizontal = { false }
                     keyExtractor = { this._keyExtractor }
                     renderItem = { this._renderParticipant }
-                    scrollEnabled = { false }
+                    scrollEnabled = { true }
                     showsHorizontalScrollIndicator = { false }
-                    style = { styles.meetingList }
                     windowSize = { 2 } />
-            </View>
+            </CollapsibleList>
         );
     }
 }

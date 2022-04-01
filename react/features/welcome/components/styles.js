@@ -39,7 +39,7 @@ export default {
     audioVideoSwitchContainer: {
         alignItems: 'center',
         flexDirection: 'row',
-        marginRight: BaseTheme.spacing[2]
+        marginRight: BaseTheme.spacing[3]
     },
 
     blankPageText: {
@@ -79,14 +79,6 @@ export default {
         alignSelf: 'center',
         color: BaseTheme.palette.text01,
         fontSize: 14
-    },
-
-    /**
-     * Drawer style.
-     */
-    drawerStyle: {
-        backgroundColor: BaseTheme.palette.ui12,
-        width: '54%'
     },
 
     /**
@@ -161,16 +153,6 @@ export default {
     },
 
     /**
-     * The style of the top-level container/{@code View} of
-     * {@code LocalVideoTrackUnderlay}.
-     */
-    localVideoTrackUnderlay: {
-        alignSelf: 'stretch',
-        backgroundColor: 'transparent',
-        flex: 1
-    },
-
-    /**
      * Top-level screen style.
      */
     page: {
@@ -198,7 +180,8 @@ export default {
      */
     roomContainer: {
         alignSelf: 'stretch',
-        flexDirection: 'column'
+        flexDirection: 'column',
+        marginHorizontal: BaseTheme.spacing[2]
     },
 
     /**
@@ -214,8 +197,7 @@ export default {
 
     drawerNavigationIcon: {
         height: BaseTheme.spacing[6],
-        marginLeft: BaseTheme.spacing[1],
-        marginTop: BaseTheme.spacing[1],
+        marginLeft: BaseTheme.spacing[3],
         width: BaseTheme.spacing[6]
     },
 
@@ -288,5 +270,12 @@ export default {
         flex: 1,
         opacity: 0.8,
         overflow: 'hidden'
+    },
+
+    /**
+     * Style for screen container.
+     */
+    screenContainer: {
+        flex: 1
     }
 };

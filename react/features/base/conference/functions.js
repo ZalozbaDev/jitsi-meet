@@ -13,7 +13,11 @@ import {
     participantLeft
 } from '../participants';
 import { toState } from '../redux';
-import { getBackendSafePath, getJitsiMeetGlobalNS, safeDecodeURIComponent } from '../util';
+import {
+    getBackendSafePath,
+    getJitsiMeetGlobalNS,
+    safeDecodeURIComponent
+} from '../util';
 
 import {
     AVATAR_URL_COMMAND,
@@ -180,9 +184,9 @@ export function getConferenceName(stateful: Function | Object): string {
     const state = toState(stateful);
     const { callee } = state['features/base/jwt'];
     const { callDisplayName } = state['features/base/config'];
-    const { pendingSubjectChange, room, subject } = getConferenceState(state);
+    const { localSubject, room, subject } = getConferenceState(state);
 
-    return pendingSubjectChange
+    return localSubject
         || subject
         || callDisplayName
         || (callee && callee.name)

@@ -19,7 +19,7 @@ type Props = {
     /**
      * Class name for context menu. Used to overwrite default styles.
      */
-    className?: string,
+    className?: ?string,
 
     /**
      * The entity for which the context menu is displayed.
@@ -32,9 +32,14 @@ type Props = {
     hidden?: boolean,
 
     /**
+     * Whether or not the menu is already in a drawer.
+     */
+    inDrawer?: ?boolean,
+
+    /**
      * Whether or not drawer should be open.
      */
-    isDrawerOpen: boolean,
+    isDrawerOpen?: boolean,
 
     /**
      * Target elements against which positioning calculations are made.
@@ -49,7 +54,7 @@ type Props = {
     /**
      * Callback for drawer close.
      */
-    onDrawerClose: Function,
+    onDrawerClose?: Function,
 
     /**
      * Callback for the mouse entering the component.
@@ -59,8 +64,10 @@ type Props = {
     /**
      * Callback for the mouse leaving the component.
      */
-    onMouseLeave: Function
+    onMouseLeave?: Function
 };
+
+const MAX_HEIGHT = 400;
 
 const useStyles = makeStyles(theme => {
     return {
@@ -75,7 +82,9 @@ const useStyles = makeStyles(theme => {
             position: 'absolute',
             right: `${participantsPaneTheme.panePadding}px`,
             top: 0,
-            zIndex: 2
+            zIndex: 2,
+            maxHeight: `${MAX_HEIGHT}px`,
+            overflowY: 'auto'
         },
 
         contextMenuHidden: {
@@ -106,6 +115,7 @@ const ContextMenu = ({
     className,
     entity,
     hidden,
+    inDrawer,
     isDrawerOpen,
     offsetTarget,
     onClick,
@@ -130,14 +140,15 @@ const ContextMenu = ({
             const { current: container } = containerRef;
             const { offsetTop, offsetParent: { offsetHeight, scrollTop } } = offsetTarget;
             const outerHeight = getComputedOuterHeight(container);
+            const height = Math.min(MAX_HEIGHT, outerHeight);
 
-            container.style.top = offsetTop + outerHeight > offsetHeight + scrollTop
+            container.style.top = offsetTop + height > offsetHeight + scrollTop
                 ? `${offsetTop - outerHeight}`
                 : `${offsetTop}`;
 
             setIsHidden(false);
         } else {
-            setIsHidden(true);
+            hidden === undefined && setIsHidden(true);
         }
     }, [ entity, offsetTarget, _overflowDrawer ]);
 
@@ -146,6 +157,14 @@ const ContextMenu = ({
             setIsHidden(hidden);
         }
     }, [ hidden ]);
+
+    if (_overflowDrawer && inDrawer) {
+        return (<div
+            className = { styles.drawer }
+            onClick = { onDrawerClose }>
+            {children}
+        </div>);
+    }
 
     return _overflowDrawer
         ? <JitsiPortal>

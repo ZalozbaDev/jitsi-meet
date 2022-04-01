@@ -4,10 +4,8 @@ import React, { Component } from 'react';
 import { Text, View } from 'react-native';
 
 import {
-    getLocalParticipant,
     getParticipantById,
-    getParticipantDisplayName,
-    shouldRenderParticipantVideo
+    getParticipantDisplayName
 } from '../../../base/participants';
 import { connect } from '../../../base/redux';
 
@@ -24,6 +22,11 @@ type Props = {
      * True of the label needs to be rendered. False otherwise.
      */
     _render: boolean,
+
+    /**
+     * Whether ot not the name is in a container.
+     */
+    contained?: boolean,
 
     /**
      * The ID of the participant to render the label for.
@@ -46,8 +49,10 @@ class DisplayNameLabel extends Component<Props> {
         }
 
         return (
-            <View style = { styles.displayNameBackdrop }>
-                <Text style = { styles.displayNameText }>
+            <View style = { this.props.contained ? styles.displayNamePadding : styles.displayNameBackdrop }>
+                <Text
+                    numberOfLines = { 1 }
+                    style = { styles.displayNameText }>
                     { this.props._participantName }
                 </Text>
             </View>
@@ -64,23 +69,12 @@ class DisplayNameLabel extends Component<Props> {
  * }}
  */
 function _mapStateToProps(state: Object, ownProps: Props) {
-    const { participantId } = ownProps;
-    const localParticipant = getLocalParticipant(state);
+    const { participantId, contained } = ownProps;
     const participant = getParticipantById(state, participantId);
-    const isFakeParticipant = participant && participant.isFakeParticipant;
-
-    // Currently we only render the display name if it's not the local
-    // participant and there is no video rendered for
-    // them.
-    const _render = Boolean(participantId)
-        && localParticipant?.id !== participantId
-        && !shouldRenderParticipantVideo(state, participantId)
-        && !isFakeParticipant;
 
     return {
-        _participantName:
-            getParticipantDisplayName(state, participantId),
-        _render
+        _participantName: getParticipantDisplayName(state, participantId),
+        _render: participant && (!participant?.local || contained) && !participant?.isFakeParticipant
     };
 }
 

@@ -3,8 +3,15 @@
 import { makeStyles } from '@material-ui/core';
 import React, { useCallback } from 'react';
 
+import { DRAWER_MAX_HEIGHT } from '../../constants';
+
 
 type Props = {
+
+    /**
+     * Class name for custom styles.
+     */
+    className: string,
 
     /**
      * The component(s) to be displayed within the drawer menu.
@@ -25,7 +32,8 @@ type Props = {
 const useStyles = makeStyles(theme => {
     return {
         drawer: {
-            backgroundColor: theme.palette.ui02
+            backgroundColor: theme.palette.ui02,
+            maxHeight: `calc(${DRAWER_MAX_HEIGHT})`
         }
     };
 });
@@ -37,6 +45,7 @@ const useStyles = makeStyles(theme => {
  */
 function Drawer({
     children,
+    className = '',
     isOpen,
     onClose
 }: Props) {
@@ -69,7 +78,7 @@ function Drawer({
                 className = 'drawer-menu-container'
                 onClick = { handleOutsideClick }>
                 <div
-                    className = { `drawer-menu ${styles.drawer}` }
+                    className = { `drawer-menu ${styles.drawer} ${className}` }
                     onClick = { handleInsideClick }>
                     {children}
                 </div>

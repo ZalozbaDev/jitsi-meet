@@ -1,8 +1,7 @@
 // @flow
 
-import { getParticipantCount } from '../base/participants';
-
 import { setRemoteParticipants } from './actions';
+import { isReorderingEnabled } from './functions';
 
 /**
  * Computes the reorderd list of the remote participants.
@@ -14,11 +13,9 @@ import { setRemoteParticipants } from './actions';
  */
 export function updateRemoteParticipants(store: Object, participantId: ?number) {
     const state = store.getState();
-    const { testing = {} } = state['features/base/config'];
-    const enableThumbnailReordering = testing.enableThumbnailReordering ?? true;
     let reorderedParticipants = [];
 
-    if (!enableThumbnailReordering) {
+    if (!isReorderingEnabled(state)) {
         if (participantId) {
             const { remoteParticipants } = state['features/filmstrip'];
 
@@ -81,17 +78,4 @@ export function updateRemoteParticipantsOnLeave(store: Object, participantId: ?s
 
     reorderedParticipants.delete(participantId)
         && store.dispatch(setRemoteParticipants(Array.from(reorderedParticipants)));
-}
-
-/**
- * Gets the disable self view flag.
- *
- * @param {Object} state - Redux state.
- * @returns {boolean}
- */
-export function getDisableSelfView(state: Object) {
-    const { disableSelfView } = state['features/base/settings'];
-    const participantsCount = getParticipantCount(state);
-
-    return participantsCount === 1 ? false : disableSelfView;
 }

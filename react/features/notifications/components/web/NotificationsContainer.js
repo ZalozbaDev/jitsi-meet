@@ -3,6 +3,7 @@
 import { FlagGroupContext } from '@atlaskit/flag/flag-group';
 import { AtlasKitThemeProvider } from '@atlaskit/theme';
 import { withStyles } from '@material-ui/styles';
+import clsx from 'clsx';
 import React, { Component } from 'react';
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
 
@@ -67,10 +68,6 @@ const useStyles = theme => {
             maxWidth: 'calc(100% - 32px)'
         },
 
-        containerChatOpen: {
-            left: '331px'
-        },
-
         transitionGroup: {
             '& > *': {
                 marginBottom: '20px',
@@ -84,6 +81,10 @@ const useStyles = theme => {
 
             '& div > span, & div > p': {
                 color: theme.palette.field01
+            },
+
+            '& div.message > span': {
+                color: theme.palette.link01Active
             },
 
             '& .ribbon': {
@@ -100,6 +101,10 @@ const useStyles = theme => {
 
                 '&.error': {
                     backgroundColor: theme.palette.iconError
+                },
+
+                '&.success': {
+                    backgroundColor: theme.palette.success01
                 },
 
                 '&.warning': {
@@ -144,24 +149,6 @@ class NotificationsContainer extends Component<Props> {
     }
 
     /**
-     * Sets a timeout for each notification, where applicable.
-     *
-     * @inheritdoc
-     */
-    componentDidMount() {
-        this._updateTimeouts();
-    }
-
-    /**
-     * Sets a timeout for each notification, where applicable.
-     *
-     * @inheritdoc
-     */
-    componentDidUpdate() {
-        this._updateTimeouts();
-    }
-
-    /**
      * Implements React's {@link Component#render()}.
      *
      * @inheritdoc
@@ -176,12 +163,9 @@ class NotificationsContainer extends Component<Props> {
             <AtlasKitThemeProvider mode = 'light'>
                 <FlagGroupContext.Provider value = { this._api }>
                     <div
-                        className = { `${this.props.classes.container} ${this.props.portal
-                            ? this.props.classes.containerPortal
-                            : this.props._isChatOpen
-                                ? this.props.classes.containerChatOpen
-                                : ''}`
-                        }
+                        className = { clsx(this.props.classes.container, {
+                            [this.props.classes.containerPortal]: this.props.portal
+                        }) }
                         id = 'notifications-container'>
                         <TransitionGroup className = { this.props.classes.transitionGroup }>
                             {this._renderFlags()}
@@ -244,31 +228,6 @@ class NotificationsContainer extends Component<Props> {
                 </CSSTransition>
             );
         });
-    }
-
-    /**
-     * Updates the timeouts for every notification.
-     *
-     * @returns {void}
-     */
-    _updateTimeouts() {
-        const { _notifications } = this.props;
-
-        for (const notification of _notifications) {
-            if (notification.timeout
-                    && notification.props.isDismissAllowed !== false
-                    && !this._timeouts.has(notification.uid)) {
-                const {
-                    timeout,
-                    uid
-                } = notification;
-                const timerID = setTimeout(() => {
-                    this._onDismissed(uid);
-                }, timeout);
-
-                this._timeouts.set(uid, timerID);
-            }
-        }
     }
 }
 

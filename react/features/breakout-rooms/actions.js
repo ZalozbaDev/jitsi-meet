@@ -17,12 +17,12 @@ import {
     setVideoMuted
 } from '../base/media';
 import { getRemoteParticipants } from '../base/participants';
-import { createDesiredLocalTracks } from '../base/tracks/actions';
 import {
     getLocalTracks,
     isLocalCameraTrackMuted,
     isLocalTrackMuted
 } from '../base/tracks';
+import { createDesiredLocalTracks } from '../base/tracks/actions';
 import {
     NOTIFICATION_TIMEOUT_TYPE,
     clearNotifications,
@@ -33,7 +33,8 @@ import { _RESET_BREAKOUT_ROOMS, _UPDATE_ROOM_COUNTER } from './actionTypes';
 import { FEATURE_KEY } from './constants';
 import {
     getBreakoutRooms,
-    getMainRoom
+    getMainRoom,
+    getRoomByJid
 } from './functions';
 import logger from './logger';
 
@@ -97,6 +98,17 @@ export function closeBreakoutRoom(roomId: string) {
 export function removeBreakoutRoom(breakoutRoomJid: string) {
     return (dispatch: Dispatch<any>, getState: Function) => {
         sendAnalytics(createBreakoutRoomsEvent('remove'));
+        const room = getRoomByJid(getState, breakoutRoomJid);
+
+        if (!room) {
+            logger.error('The room to remove was not found.');
+
+            return;
+        }
+
+        if (Object.keys(room.participants).length > 0) {
+            dispatch(closeBreakoutRoom(room.id));
+        }
 
         // $FlowExpectedError
         getCurrentConference(getState)?.getBreakoutRooms()
@@ -233,7 +245,9 @@ export function moveToRoom(roomId?: string) {
             const isVideoMuted = isLocalCameraTrackMuted(localTracks);
 
             try {
-                await APP.conference.leaveRoom(false /* doDisconnect */);
+                // all places we fire notifyConferenceLeft we pass the room name from APP.conference
+                await APP.conference.leaveRoom(false /* doDisconnect */).then(
+                    () => APP.API.notifyConferenceLeft(APP.conference.roomName));
             } catch (error) {
                 logger.warn('APP.conference.leaveRoom() rejected with:', error);
 

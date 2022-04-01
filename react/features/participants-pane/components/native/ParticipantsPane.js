@@ -1,8 +1,8 @@
 // @flow
 
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ScrollView, View } from 'react-native';
+import { View } from 'react-native';
 import { Button } from 'react-native-paper';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -14,14 +14,23 @@ import {
 } from '../../../base/participants';
 import { equals } from '../../../base/redux';
 import {
+    getBreakoutRooms,
+    getBreakoutRoomsConfig,
+    getCurrentRoomId,
+    isInBreakoutRoom
+} from '../../../breakout-rooms/functions';
+import {
+    getKnockingParticipants,
+    getLobbyEnabled
+} from '../../../lobby/functions';
+import MuteEveryoneDialog
+    from '../../../video-menu/components/native/MuteEveryoneDialog';
+import {
     AddBreakoutRoomButton,
     AutoAssignButton,
     LeaveBreakoutRoomButton
-} from '../../../breakout-rooms/components/native';
-import { CollapsibleRoom } from '../../../breakout-rooms/components/native/CollapsibleRoom';
-import { getBreakoutRooms, getCurrentRoomId, isInBreakoutRoom } from '../../../breakout-rooms/functions';
-import MuteEveryoneDialog
-    from '../../../video-menu/components/native/MuteEveryoneDialog';
+} from '../breakout-rooms/components/native';
+import { CollapsibleRoom } from '../breakout-rooms/components/native/CollapsibleRoom';
 
 import { ContextMenuMore } from './ContextMenuMore';
 import HorizontalDotsIcon from './HorizontalDotsIcon';
@@ -36,13 +45,14 @@ import styles from './styles';
  */
 const ParticipantsPane = () => {
     const dispatch = useDispatch();
+    const [ searchString, setSearchString ] = useState('');
     const openMoreMenu = useCallback(() => dispatch(openDialog(ContextMenuMore)), [ dispatch ]);
     const isLocalModerator = useSelector(isLocalParticipantModerator);
     const muteAll = useCallback(() => dispatch(openDialog(MuteEveryoneDialog)),
         [ dispatch ]);
     const { t } = useTranslation();
 
-    const { hideAddRoomButton } = useSelector(state => state['features/base/config']);
+    const { hideAddRoomButton } = useSelector(getBreakoutRoomsConfig);
     const { conference } = useSelector(state => state['features/base/conference']);
 
     // $FlowExpectedError
@@ -53,29 +63,40 @@ const ParticipantsPane = () => {
         .sort((p1: Object, p2: Object) => (p1?.name || '').localeCompare(p2?.name || ''));
     const inBreakoutRoom = useSelector(isInBreakoutRoom);
     const participantsCount = useSelector(getParticipantCount);
+    const autoAssign = !inBreakoutRoom && isLocalModerator
+        && participantsCount > 2 && rooms.length > 1;
+    const addBreakoutRoom
+        = _isBreakoutRoomsSupported && !hideAddRoomButton && isLocalModerator;
+    const lobbyEnabled = useSelector(getLobbyEnabled);
+    const lobbyParticipants = useSelector(getKnockingParticipants);
 
     return (
-        <JitsiScreen
-            style = { styles.participantsPane }>
-            <ScrollView bounces = { false }>
-                <LobbyParticipantList />
-                <MeetingParticipantList />
-                {!inBreakoutRoom
-                    && isLocalModerator
-                    && participantsCount > 2
-                    && rooms.length > 1
-                    && <AutoAssignButton />}
-                {inBreakoutRoom && <LeaveBreakoutRoomButton />}
-                {_isBreakoutRoomsSupported
-                    && rooms.map(room => (<CollapsibleRoom
-                        key = { room.id }
-                        room = { room } />))}
-                {_isBreakoutRoomsSupported && !hideAddRoomButton && isLocalModerator
-                    && <AddBreakoutRoomButton />}
-            </ScrollView>
+        <JitsiScreen style = { styles.participantsPaneContainer }>
+            <LobbyParticipantList />
+            <MeetingParticipantList
+                breakoutRooms = { _isBreakoutRoomsSupported && rooms }
+                lobbyParticipants = { lobbyEnabled && lobbyParticipants }
+                searchString = { searchString }
+                setSearchString = { setSearchString } />
+            {
+                autoAssign && <AutoAssignButton />
+            }
+            {
+                inBreakoutRoom && <LeaveBreakoutRoomButton />
+            }
+            {
+                _isBreakoutRoomsSupported
+                && rooms.map(room => (<CollapsibleRoom
+                    key = { room.id }
+                    room = { room }
+                    searchString = { searchString } />))
+            }
+            {
+                addBreakoutRoom && <AddBreakoutRoomButton />
+            }
             {
                 isLocalModerator
-                && <View style = { styles.footer }>
+                && <View style = { styles.participantsPaneFooter }>
                     <Button
                         children = { t('participantsPane.actions.muteAll') }
                         labelStyle = { styles.muteAllLabel }

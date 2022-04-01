@@ -1,12 +1,13 @@
 BUILD_DIR = build
 CLEANCSS = ./node_modules/.bin/cleancss
 DEPLOY_DIR = libs
-LIBJITSIMEET_DIR = node_modules/lib-jitsi-meet/
-LIBFLAC_DIR = node_modules/libflacjs/dist/min/
+LIBJITSIMEET_DIR = node_modules/lib-jitsi-meet
+LIBFLAC_DIR = node_modules/libflacjs/dist/min
 OLM_DIR = node_modules/@matrix-org/olm
-RNNOISE_WASM_DIR = node_modules/rnnoise-wasm/dist/
+TF_WASM_DIR = node_modules/@tensorflow/tfjs-backend-wasm/dist/
+RNNOISE_WASM_DIR = node_modules/rnnoise-wasm/dist
 TFLITE_WASM = react/features/stream-effects/virtual-background/vendor/tflite
-MEET_MODELS_DIR  = react/features/stream-effects/virtual-background/vendor/models/
+MEET_MODELS_DIR  = react/features/stream-effects/virtual-background/vendor/models
 FACIAL_MODELS_DIR = react/features/facial-recognition/resources
 NODE_SASS = ./node_modules/.bin/sass
 NPM = npm
@@ -29,7 +30,7 @@ clean:
 	rm -fr $(BUILD_DIR)
 
 .NOTPARALLEL:
-deploy: deploy-init deploy-appbundle deploy-rnnoise-binary deploy-tflite deploy-meet-models deploy-lib-jitsi-meet deploy-libflac deploy-olm deploy-css deploy-local deploy-facial-expressions
+deploy: deploy-init deploy-appbundle deploy-rnnoise-binary deploy-tflite deploy-meet-models deploy-lib-jitsi-meet deploy-libflac deploy-olm deploy-tf-wasm deploy-css deploy-local deploy-facial-expressions
 
 deploy-init:
 	rm -fr $(DEPLOY_DIR)
@@ -52,6 +53,8 @@ deploy-appbundle:
 		$(OUTPUT_DIR)/analytics-ga.js \
 		$(BUILD_DIR)/analytics-ga.min.js \
 		$(BUILD_DIR)/analytics-ga.min.js.map \
+		$(BUILD_DIR)/face-centering-worker.min.js \
+		$(BUILD_DIR)/face-centering-worker.min.js.map \
 		$(BUILD_DIR)/facial-expressions-worker.min.js \
 		$(BUILD_DIR)/facial-expressions-worker.min.js.map \
 		$(DEPLOY_DIR)
@@ -62,9 +65,9 @@ deploy-appbundle:
 
 deploy-lib-jitsi-meet:
 	cp \
-		$(LIBJITSIMEET_DIR)/lib-jitsi-meet.min.js \
-		$(LIBJITSIMEET_DIR)/lib-jitsi-meet.min.map \
-		$(LIBJITSIMEET_DIR)/lib-jitsi-meet.e2ee-worker.js \
+		$(LIBJITSIMEET_DIR)/dist/umd/lib-jitsi-meet.min.js \
+		$(LIBJITSIMEET_DIR)/dist/umd/lib-jitsi-meet.min.map \
+		$(LIBJITSIMEET_DIR)/dist/umd/lib-jitsi-meet.e2ee-worker.js \
 		$(LIBJITSIMEET_DIR)/connection_optimization/external_connect.js \
 		$(LIBJITSIMEET_DIR)/modules/browser/capabilities.json \
 		$(DEPLOY_DIR)
@@ -78,6 +81,11 @@ deploy-libflac:
 deploy-olm:
 	cp \
 		$(OLM_DIR)/olm.wasm \
+		$(DEPLOY_DIR)
+
+deploy-tf-wasm:
+	cp \
+		$(TF_WASM_DIR)/*.wasm \
 		$(DEPLOY_DIR)
 
 deploy-rnnoise-binary:
@@ -102,14 +110,14 @@ deploy-facial-expressions:
 
 deploy-css:
 	$(NODE_SASS) $(STYLES_MAIN) $(STYLES_BUNDLE) && \
-	$(CLEANCSS) --skip-rebase $(STYLES_BUNDLE) > $(STYLES_DESTINATION) ; \
+	$(CLEANCSS) --skip-rebase $(STYLES_BUNDLE) > $(STYLES_DESTINATION) && \
 	rm $(STYLES_BUNDLE)
 
 deploy-local:
 	([ ! -x deploy-local.sh ] || ./deploy-local.sh)
 
 .NOTPARALLEL:
-dev: deploy-init deploy-css deploy-rnnoise-binary deploy-tflite deploy-meet-models deploy-lib-jitsi-meet deploy-libflac deploy-olm deploy-facial-expressions
+dev: deploy-init deploy-css deploy-rnnoise-binary deploy-tflite deploy-meet-models deploy-lib-jitsi-meet deploy-libflac deploy-olm deploy-tf-wasm deploy-facial-expressions
 	$(WEBPACK_DEV_SERVER)
 
 source-package:

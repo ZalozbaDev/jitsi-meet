@@ -1,7 +1,9 @@
 // @flow
 
-import { getCurrentConference } from '../base/conference';
+import { JitsiRecordingConstants } from '../base/lib-jitsi-meet';
 import { toState } from '../base/redux';
+import { getActiveSession } from '../recording/functions';
+import { isScreenVideoShared } from '../screen-share';
 
 import ScreenshotCaptureSummary from './ScreenshotCaptureSummary';
 
@@ -21,24 +23,34 @@ export function createScreenshotCaptureSummary(stateful: Object | Function) {
 }
 
 /**
- * Get a participant's connection JID given its ID.
+ * Checks if the screenshot capture is enabled based on the config.
  *
- * @param {Object} state - The redux store state.
- * @param {string} participantId - ID of the given participant.
- * @returns {string|undefined} - The participant connection JID if found.
+ * @param {Object} state - Redux state.
+ * @param {boolean} checkSharing - Whether to check if screensharing is on.
+ * @param {boolean} checkRecording - Whether to check is recording is on.
+ * @returns {boolean}
  */
-export function getParticipantJid(state: Object, participantId: string) {
-    const conference = getCurrentConference(state);
+export function isScreenshotCaptureEnabled(state: Object, checkSharing, checkRecording) {
+    const { screenshotCapture } = state['features/base/config'];
 
-    if (!conference) {
-        return;
+    if (!screenshotCapture?.enabled) {
+        return false;
     }
 
-    const participant = conference.getParticipantById(participantId);
-
-    if (!participant) {
-        return;
+    if (checkSharing && !isScreenVideoShared(state)) {
+        return false;
     }
 
-    return participant.getJid();
+    if (checkRecording) {
+        // Feature enabled always.
+        if (screenshotCapture.mode === 'always') {
+            return true;
+        }
+
+        // Feature enabled only when recording is also on.
+        return Boolean(getActiveSession(state, JitsiRecordingConstants.mode.FILE));
+    }
+
+    return true;
+
 }

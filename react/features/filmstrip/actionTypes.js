@@ -91,3 +91,71 @@ export const SET_VOLUME = 'SET_VOLUME';
  * }
  */
 export const SET_VISIBLE_REMOTE_PARTICIPANTS = 'SET_VISIBLE_REMOTE_PARTICIPANTS';
+
+/**
+ * The type of action which sets the width for the vertical filmstrip.
+ * {
+ *      type: SET_FILMSTRIP_WIDTH,
+ *      width: number
+ * }
+ */
+export const SET_FILMSTRIP_WIDTH = 'SET_FILMSTRIP_WIDTH';
+
+/**
+ * The type of action which sets the width for the vertical filmstrip (user resized).
+ * {
+ *      type: SET_USER_FILMSTRIP_WIDTH,
+ *      width: number
+ * }
+ */
+export const SET_USER_FILMSTRIP_WIDTH = 'SET_USER_FILMSTRIP_WIDTH';
+
+/**
+ * The type of action which sets whether the user is resizing or not.
+ * {
+ *      type: SET_USER_IS_RESIZING,
+ *      resizing: boolean
+ * }
+ */
+export const SET_USER_IS_RESIZING = 'SET_USER_IS_RESIZING';
+
+/**
+ * The type of (redux) action which sets the dimensions of the thumbnails in stage filmstrip view.
+ *
+ * {
+ *     type: SET_STAGE_FILMSTRIP_DIMENSIONS,
+ *     dimensions: Object
+ * }
+ */
+export const SET_STAGE_FILMSTRIP_DIMENSIONS = 'SET_STAGE_FILMSTRIP_DIMENSIONS';
+
+/**
+ * The type of Redux action which adds a participant to the active list
+ * (the participants displayed on the stage filmstrip).
+ * {
+ *     type: ADD_STAGE_PARTICIPANT,
+ *     participantId: string,
+ *     pinned: boolean
+ * }
+ */
+export const ADD_STAGE_PARTICIPANT = 'ADD_STAGE_PARTICIPANT';
+
+/**
+ * The type of Redux action which removes a participant from the active list
+ * (the participants displayed on the stage filmstrip).
+ * {
+ *     type: REMOVE_STAGE_PARTICIPANT,
+ *     participantId: string,
+ * }
+ */
+export const REMOVE_STAGE_PARTICIPANT = 'REMOVE_STAGE_PARTICIPANT';
+
+/**
+ * The type of Redux action which sets the active participants list
+ * (the participants displayed on the stage filmstrip).
+ * {
+ *     type: SET_STAGE_PARTICIPANTS,
+ *     queue: Array<Object>
+ * }
+ */
+export const SET_STAGE_PARTICIPANTS = 'SET_STAGE_PARTICIPANTS';

@@ -1,17 +1,20 @@
 // @flow
 
 import React, { Component } from 'react';
-import { Linking, View } from 'react-native';
+import { Linking, Platform, View } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { type Dispatch } from 'redux';
 
 import { openDialog } from '../../../../base/dialog';
 import { translate } from '../../../../base/i18n';
+import { IconClose } from '../../../../base/icons';
 import JitsiScreen from '../../../../base/modal/components/JitsiScreen';
 import { LoadingIndicator } from '../../../../base/react';
 import { connect } from '../../../../base/redux';
-import { screen } from '../../../../conference/components/native/routes';
-import { renderArrowBackButton } from '../../../../welcome/functions.native';
+import HeaderNavigationButton
+    from '../../../../mobile/navigation/components/HeaderNavigationButton';
+import { navigateRoot } from '../../../../mobile/navigation/rootNavigationContainerRef';
+import { screen } from '../../../../mobile/navigation/routes';
 import { getDialInfoPageURLForURIString } from '../../../functions';
 
 import DialInSummaryErrorDialog from './DialInSummaryErrorDialog';
@@ -29,7 +32,12 @@ type Props = {
     /**
      * Default prop for navigating between screen components(React Navigation).
      */
-    route: Object
+    route: Object,
+
+    /**
+     * Translation function.
+     */
+    t: Function
 };
 
 /**
@@ -45,6 +53,7 @@ class DialInSummary extends Component<Props> {
     constructor(props: Props) {
         super(props);
 
+        this._onNavigateToRoot = this._onNavigateToRoot.bind(this);
         this._onError = this._onError.bind(this);
         this._onNavigate = this._onNavigate.bind(this);
         this._renderLoading = this._renderLoading.bind(this);
@@ -58,14 +67,24 @@ class DialInSummary extends Component<Props> {
      * @returns {void}
      */
     componentDidMount() {
-        const {
-            navigation
-        } = this.props;
+        const { navigation, t } = this.props;
 
         navigation.setOptions({
-            headerLeft: () =>
-                renderArrowBackButton(() =>
-                    navigation.navigate(screen.welcome.main))
+            headerLeft: () => {
+                if (Platform.OS === 'ios') {
+                    return (
+                        <HeaderNavigationButton
+                            label = { t('dialog.close') }
+                            onPress = { this._onNavigateToRoot } />
+                    );
+                }
+
+                return (
+                    <HeaderNavigationButton
+                        onPress = { this._onNavigateToRoot }
+                        src = { IconClose } />
+                );
+            }
         });
     }
 
@@ -91,6 +110,17 @@ class DialInSummary extends Component<Props> {
                     style = { styles.webView } />
             </JitsiScreen>
         );
+    }
+
+    _onNavigateToRoot: () => void;
+
+    /**
+     * Callback to handle navigation back to root.
+     *
+     * @returns {void}
+     */
+    _onNavigateToRoot() {
+        navigateRoot(screen.root);
     }
 
     _onError: () => void;

@@ -11,6 +11,7 @@ import {
     SET_AUDIO_AVAILABLE,
     SET_AUDIO_UNMUTE_PERMISSIONS,
     SET_CAMERA_FACING_MODE,
+    SET_SCREENSHARE_MUTED,
     SET_VIDEO_AVAILABLE,
     SET_VIDEO_MUTED,
     SET_VIDEO_UNMUTE_PERMISSIONS,
@@ -20,6 +21,7 @@ import {
 import {
     MEDIA_TYPE,
     type MediaType,
+    SCREENSHARE_MUTISM_AUTHORITY,
     VIDEO_MUTISM_AUTHORITY
 } from './constants';
 
@@ -65,12 +67,14 @@ export function setAudioMuted(muted: boolean, ensureTrack: boolean = false) {
  * Action to disable/enable the audio mute icon.
  *
  * @param {boolean} blocked - True if the audio mute icon needs to be disabled.
+ * @param {boolean|undefined} skipNotification - True if we want to skip showing the notification.
  * @returns {Function}
  */
-export function setAudioUnmutePermissions(blocked: boolean) {
+export function setAudioUnmutePermissions(blocked: boolean, skipNotification: boolean = false) {
     return {
         type: SET_AUDIO_UNMUTE_PERMISSIONS,
-        blocked
+        blocked,
+        skipNotification
     };
 }
 
@@ -87,6 +91,47 @@ export function setCameraFacingMode(cameraFacingMode: string) {
     return {
         type: SET_CAMERA_FACING_MODE,
         cameraFacingMode
+    };
+}
+
+/**
+ * Action to set the muted state of the local screenshare.
+ *
+ * @param {boolean} muted - True if the local screenshare is to be enabled or false otherwise.
+ * @param {MEDIA_TYPE} mediaType - The type of media.
+ * @param {number} authority - The {@link SCREENSHARE_MUTISM_AUTHORITY} which is muting/unmuting the local screenshare.
+ * @param {boolean} ensureTrack - True if we want to ensure that a new track is created if missing.
+ * @returns {Function}
+ */
+export function setScreenshareMuted(
+        muted: boolean,
+        mediaType: MediaType = MEDIA_TYPE.SCREENSHARE,
+        authority: number = SCREENSHARE_MUTISM_AUTHORITY.USER,
+        ensureTrack: boolean = false) {
+    return (dispatch: Dispatch<any>, getState: Function) => {
+        const state = getState();
+
+        // check for A/V Moderation when trying to unmute
+        if (!muted && shouldShowModeratedNotification(MEDIA_TYPE.SCREENSHARE, state)) {
+            if (!isModerationNotificationDisplayed(MEDIA_TYPE.SCREENSHARE, state)) {
+                ensureTrack && dispatch(showModeratedNotification(MEDIA_TYPE.SCREENSHARE));
+            }
+
+            return;
+        }
+
+        const oldValue = state['features/base/media'].screenshare.muted;
+
+        // eslint-disable-next-line no-bitwise
+        const newValue = muted ? oldValue | authority : oldValue & ~authority;
+
+        return dispatch({
+            type: SET_SCREENSHARE_MUTED,
+            authority,
+            mediaType,
+            ensureTrack,
+            muted: newValue
+        });
     };
 }
 
@@ -155,12 +200,14 @@ export function setVideoMuted(
  * Action to disable/enable the video mute icon.
  *
  * @param {boolean} blocked - True if the video mute icon needs to be disabled.
+ * @param {boolean|undefined} skipNotification - True if we want to skip showing the notification.
  * @returns {Function}
  */
-export function setVideoUnmutePermissions(blocked: boolean) {
+export function setVideoUnmutePermissions(blocked: boolean, skipNotification: boolean = false) {
     return {
         type: SET_VIDEO_UNMUTE_PERMISSIONS,
-        blocked
+        blocked,
+        skipNotification
     };
 }
 

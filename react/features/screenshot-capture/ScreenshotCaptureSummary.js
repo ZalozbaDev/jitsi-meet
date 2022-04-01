@@ -6,7 +6,7 @@ import './createImageBitmap';
 
 import { createScreensharingCaptureTakenEvent, sendAnalytics } from '../analytics';
 import { getCurrentConference } from '../base/conference';
-import { getRemoteParticipants } from '../base/participants';
+import { getLocalParticipant, getRemoteParticipants } from '../base/participants';
 import { extractFqnFromPath } from '../dynamic-branding';
 
 import {
@@ -16,7 +16,6 @@ import {
     POLL_INTERVAL,
     SET_INTERVAL
 } from './constants';
-import { getParticipantJid } from './functions';
 import { processScreenshot } from './processScreenshot';
 import { timerWorkerScript } from './worker';
 
@@ -33,6 +32,7 @@ export default class ScreenshotCaptureSummary {
     _currentCanvasContext: CanvasRenderingContext2D;
     _handleWorkerAction: Function;
     _initScreenshotCapture: Function;
+    _initializedRegion: boolean;
     _imageCapture: any;
     _streamWorker: Worker;
     _streamHeight: any;
@@ -54,6 +54,35 @@ export default class ScreenshotCaptureSummary {
         this._initScreenshotCapture = this._initScreenshotCapture.bind(this);
         this._streamWorker = new Worker(timerWorkerScript, { name: 'Screenshot capture worker' });
         this._streamWorker.onmessage = this._handleWorkerAction;
+
+        this._initializedRegion = false;
+    }
+
+    /**
+     * Make a call to backend for region selection.
+     *
+     * @returns {void}
+     */
+    async _initRegionSelection() {
+        const { _screenshotHistoryRegionUrl } = this._state['features/base/config'];
+        const conference = getCurrentConference(this._state);
+        const sessionId = conference.getMeetingUniqueId();
+        const { jwt } = this._state['features/base/jwt'];
+
+        if (!_screenshotHistoryRegionUrl) {
+            return;
+        }
+
+        const headers = {
+            ...jwt && { 'Authorization': `Bearer ${jwt}` }
+        };
+
+        await fetch(`${_screenshotHistoryRegionUrl}/${sessionId}`, {
+            method: 'POST',
+            headers
+        });
+
+        this._initializedRegion = true;
     }
 
     /**
@@ -63,7 +92,7 @@ export default class ScreenshotCaptureSummary {
      * @returns {Promise} - Promise that resolves once effect has started or rejects if the
      * videoType parameter is not desktop.
      */
-    start(track: Object) {
+    async start(track: Object) {
         const { videoType } = track;
         const stream = track.getOriginalStream();
 
@@ -80,6 +109,9 @@ export default class ScreenshotCaptureSummary {
         this._currentCanvas.width = parseInt(width, 10);
         this._imageCapture = new ImageCapture(desktopTrack);
 
+        if (!this._initializedRegion) {
+            await this._initRegionSelection();
+        }
         this._initScreenshotCapture();
     }
 
@@ -145,10 +177,8 @@ export default class ScreenshotCaptureSummary {
         const remoteParticipants = getRemoteParticipants(this._state);
         const participants = [];
 
-        remoteParticipants.forEach(p => participants.push(
-            getParticipantJid(this._state, p.id)
-        ));
-
+        participants.push(getLocalParticipant(this._state).id);
+        remoteParticipants.forEach(p => participants.push(p.id));
         this._storedImageData = imageData;
 
         processScreenshot(this._currentCanvas, {

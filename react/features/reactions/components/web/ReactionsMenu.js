@@ -2,6 +2,8 @@
 
 /* eslint-disable react/jsx-no-bind */
 
+import { withStyles } from '@material-ui/styles';
+import clsx from 'clsx';
 import React, { Component } from 'react';
 import { bindActionCreators } from 'redux';
 
@@ -14,10 +16,12 @@ import { isMobileBrowser } from '../../../base/environment/utils';
 import { translate } from '../../../base/i18n';
 import { getLocalParticipant, hasRaisedHand, raiseHand } from '../../../base/participants';
 import { connect } from '../../../base/redux';
+import { GifsMenu, GifsMenuButton } from '../../../gifs/components';
+import { isGifEnabled, isGifsMenuOpen } from '../../../gifs/functions';
 import { dockToolbox } from '../../../toolbox/actions.web';
 import { addReactionToBuffer } from '../../actions.any';
 import { toggleReactionsMenuVisibility } from '../../actions.web';
-import { REACTIONS } from '../../constants';
+import { REACTIONS, REACTIONS_MENU_HEIGHT } from '../../constants';
 
 import ReactionButton from './ReactionButton';
 
@@ -27,6 +31,16 @@ type Props = {
      * Docks the toolbox.
      */
     _dockToolbox: Function,
+
+    /**
+     * Whether or not the GIF feature is enabled.
+     */
+    _isGifEnabled: boolean,
+
+    /**
+     * Whether or not the GIF menu is visible.
+     */
+    _isGifMenuVisible: boolean,
 
     /**
      * Whether or not it's a mobile browser.
@@ -42,6 +56,11 @@ type Props = {
      * Whether or not the local participant's hand is raised.
      */
     _raisedHand: boolean,
+
+    /**
+     * An object containing the CSS classes.
+     */
+    classes: Object,
 
     /**
      * The Redux Dispatch function.
@@ -60,6 +79,21 @@ type Props = {
 };
 
 declare var APP: Object;
+
+const styles = theme => {
+    return {
+        overflow: {
+            width: 'auto',
+            paddingBottom: 'max(env(safe-area-inset-bottom, 0), 16px)',
+            backgroundColor: theme.palette.ui01,
+            boxShadow: 'none',
+            borderRadius: 0,
+            position: 'relative',
+            boxSizing: 'border-box',
+            height: `${REACTIONS_MENU_HEIGHT}px`
+        }
+    };
+};
 
 /**
  * Implements the reactions menu.
@@ -172,12 +206,16 @@ class ReactionsMenu extends Component<Props> {
      * @inheritdoc
      */
     render() {
-        const { _raisedHand, t, overflowMenu, _isMobile } = this.props;
+        const { _raisedHand, t, overflowMenu, _isMobile, classes, _isGifMenuVisible, _isGifEnabled } = this.props;
 
         return (
-            <div className = { `reactions-menu ${overflowMenu ? 'overflow' : ''}` }>
+            <div
+                className = { clsx('reactions-menu', _isGifEnabled && 'with-gif',
+                    overflowMenu && `overflow ${classes.overflow}`) }>
+                {_isGifEnabled && _isGifMenuVisible && <GifsMenu />}
                 <div className = 'reactions-row'>
                     { this._getReactionButtons() }
+                    {_isGifEnabled && <GifsMenuButton />}
                 </div>
                 {_isMobile && (
                     <div className = 'raise-hand-row'>
@@ -210,6 +248,8 @@ function mapStateToProps(state) {
     return {
         _localParticipantID: localParticipant.id,
         _isMobile: isMobileBrowser(),
+        _isGifEnabled: isGifEnabled(state),
+        _isGifMenuVisible: isGifsMenuOpen(state),
         _raisedHand: hasRaisedHand(localParticipant)
     };
 }
@@ -233,4 +273,4 @@ function mapDispatchToProps(dispatch) {
 export default translate(connect(
     mapStateToProps,
     mapDispatchToProps
-)(ReactionsMenu));
+)(withStyles(styles)(ReactionsMenu)));

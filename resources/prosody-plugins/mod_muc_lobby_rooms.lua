@@ -158,6 +158,26 @@ function filter_stanza(stanza)
         elseif stanza.name == 'iq' and stanza:get_child('query', DISCO_INFO_NS) then
             -- allow disco info from the lobby component
             return stanza;
+        elseif stanza.name == 'message' then
+            -- allow messages to or from moderator
+            local lobby_room_jid = jid_bare(stanza.attr.from);
+            local lobby_room = lobby_muc_service.get_room_from_jid(lobby_room_jid);
+            local is_to_moderator = lobby_room:get_affiliation(stanza.attr.to) == 'owner';
+            local from_occupant = lobby_room:get_occupant_by_nick(stanza.attr.from);
+
+            local from_real_jid;
+            if from_occupant then
+                for real_jid in from_occupant:each_session() do
+                    from_real_jid = real_jid;
+                end
+            end
+
+            local is_from_moderator = lobby_room:get_affiliation(from_real_jid) == 'owner';
+
+            if is_to_moderator or is_from_moderator then
+                return stanza;
+            end
+            return nil;
         end
 
         return nil;
@@ -380,10 +400,13 @@ process_host_module(main_muc_component_config, function(host_module, host)
         local invitee = event.stanza.attr.from;
         local affiliation = room:get_affiliation(invitee);
         if not affiliation or affiliation == 'none' then
-            local reply = st.error_reply(stanza, 'auth', 'registration-required'):up();
+            local reply = st.error_reply(stanza, 'auth', 'registration-required');
             reply.tags[1].attr.code = '407';
-            reply:tag('x', {xmlns = MUC_NS}):up();
-            reply:tag('lobbyroom'):text(room._data.lobbyroom);
+            reply:tag('lobbyroom', { xmlns = 'http://jitsi.org/jitmeet' }):text(room._data.lobbyroom):up():up();
+
+            -- TODO: Drop this tag at some point (when all mobile clients and jigasi are updated), as this violates the rfc
+            reply:tag('lobbyroom'):text(room._data.lobbyroom):up();
+
             event.origin.send(reply:tag('x', {xmlns = MUC_NS}));
             return true;
         end

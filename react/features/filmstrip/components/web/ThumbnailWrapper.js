@@ -2,9 +2,11 @@
 import React, { Component } from 'react';
 import { shouldComponentUpdate } from 'react-window';
 
+import { getLocalParticipant } from '../../../base/participants';
 import { connect } from '../../../base/redux';
+import { shouldHideSelfView } from '../../../base/settings/functions.any';
 import { getCurrentLayout, LAYOUTS } from '../../../video-layout';
-import { getDisableSelfView } from '../../functions.any';
+import { showGridInVerticalView, getActiveParticipantsIds } from '../../functions';
 
 import Thumbnail from './Thumbnail';
 
@@ -27,6 +29,11 @@ type Props = {
      * The ID of the participant associated with the Thumbnail.
      */
     _participantID: ?string,
+
+    /**
+     * Whether or not the filmstrip is used a stage filmstrip.
+     */
+    _stageFilmstrip: boolean,
 
     /**
      * The index of the column in tile view.
@@ -75,7 +82,13 @@ class ThumbnailWrapper extends Component<Props> {
      * @returns {ReactElement}
      */
     render() {
-        const { _participantID, style, _horizontalOffset = 0, _disableSelfView } = this.props;
+        const {
+            _disableSelfView,
+            _horizontalOffset = 0,
+            _participantID,
+            _stageFilmstrip,
+            style
+        } = this.props;
 
         if (typeof _participantID !== 'string') {
             return null;
@@ -86,6 +99,7 @@ class ThumbnailWrapper extends Component<Props> {
                 <Thumbnail
                     horizontalOffset = { _horizontalOffset }
                     key = 'local'
+                    stageFilmstrip = { _stageFilmstrip }
                     style = { style } />);
         }
 
@@ -94,6 +108,7 @@ class ThumbnailWrapper extends Component<Props> {
                 horizontalOffset = { _horizontalOffset }
                 key = { `remote_${_participantID}` }
                 participantID = { _participantID }
+                stageFilmstrip = { _stageFilmstrip }
                 style = { style } />);
     }
 }
@@ -108,32 +123,58 @@ class ThumbnailWrapper extends Component<Props> {
  */
 function _mapStateToProps(state, ownProps) {
     const _currentLayout = getCurrentLayout(state);
-    const { remoteParticipants } = state['features/filmstrip'];
-    const remoteParticipantsLength = remoteParticipants.length;
+    const { remoteParticipants: remote } = state['features/filmstrip'];
+    const activeParticipants = getActiveParticipantsIds(state);
     const { testing = {} } = state['features/base/config'];
-    const disableSelfView = getDisableSelfView(state);
+    const disableSelfView = shouldHideSelfView(state);
     const enableThumbnailReordering = testing.enableThumbnailReordering ?? true;
+    const _verticalViewGrid = showGridInVerticalView(state);
+    const stageFilmstrip = ownProps.data?.stageFilmstrip;
+    const remoteParticipants = stageFilmstrip ? activeParticipants : remote;
+    const remoteParticipantsLength = remoteParticipants.length;
+    const localId = getLocalParticipant(state).id;
 
-    if (_currentLayout === LAYOUTS.TILE_VIEW) {
+    if (_currentLayout === LAYOUTS.TILE_VIEW || _verticalViewGrid || stageFilmstrip) {
         const { columnIndex, rowIndex } = ownProps;
-        const { gridDimensions = {}, thumbnailSize } = state['features/filmstrip'].tileViewDimensions;
+        const { tileViewDimensions, stageFilmstripDimensions, verticalViewDimensions } = state['features/filmstrip'];
+        const { gridView } = verticalViewDimensions;
+        let gridDimensions = tileViewDimensions.gridDimensions,
+            thumbnailSize = tileViewDimensions.thumbnailSize;
+
+        if (stageFilmstrip) {
+            gridDimensions = stageFilmstripDimensions.gridDimensions;
+            thumbnailSize = stageFilmstripDimensions.thumbnailSize;
+        } else if (_verticalViewGrid) {
+            gridDimensions = gridView.gridDimensions;
+            thumbnailSize = gridView.thumbnailSize;
+        }
         const { columns, rows } = gridDimensions;
         const index = (rowIndex * columns) + columnIndex;
         let horizontalOffset;
         const { iAmRecorder } = state['features/base/config'];
-        const participantsLenght = remoteParticipantsLength + (iAmRecorder ? 0 : 1) - (disableSelfView ? 1 : 0);
+        const participantsLength = stageFilmstrip ? remoteParticipantsLength
+            : remoteParticipantsLength + (iAmRecorder ? 0 : 1) - (disableSelfView ? 1 : 0);
 
         if (rowIndex === rows - 1) { // center the last row
             const { width: thumbnailWidth } = thumbnailSize;
-            const partialLastRowParticipantsNumber = participantsLenght % columns;
+            const partialLastRowParticipantsNumber = participantsLength % columns;
 
             if (partialLastRowParticipantsNumber > 0) {
                 horizontalOffset = Math.floor((columns - partialLastRowParticipantsNumber) * (thumbnailWidth + 4) / 2);
             }
         }
 
-        if (index > participantsLenght - 1) {
+        if (index > participantsLength - 1) {
             return {};
+        }
+
+        if (stageFilmstrip) {
+            return {
+                _disableSelfView: disableSelfView,
+                _participantID: remoteParticipants[index] === localId ? 'local' : remoteParticipants[index],
+                _horizontalOffset: horizontalOffset,
+                _stageFilmstrip: stageFilmstrip
+            };
         }
 
         // When the thumbnails are reordered, local participant is inserted at index 0.

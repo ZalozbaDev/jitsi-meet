@@ -5,18 +5,15 @@ import { getFeatureFlag, TILE_VIEW_ENABLED } from '../base/flags';
 import {
     getPinnedParticipant,
     getParticipantCount,
-    pinParticipant,
-    getParticipantCountWithFake
+    pinParticipant
 } from '../base/participants';
 import {
-    ASPECT_RATIO_BREAKPOINT,
     DEFAULT_MAX_COLUMNS,
-    ABSOLUTE_MAX_COLUMNS,
-    SINGLE_COLUMN_BREAKPOINT,
-    TWO_COLUMN_BREAKPOINT
+    ABSOLUTE_MAX_COLUMNS
 } from '../filmstrip/constants';
-import { getDisableSelfView } from '../filmstrip/functions.any';
+import { getNumberOfPartipantsForTileView } from '../filmstrip/functions.web';
 import { isVideoPlaying } from '../shared-video/functions';
+import { VIDEO_QUALITY_LEVELS } from '../video-quality/constants';
 
 import { LAYOUTS } from './constants';
 
@@ -59,33 +56,13 @@ export function getCurrentLayout(state: Object) {
  * returned will be between 1 and 7, inclusive.
  *
  * @param {Object} state - The redux store state.
+ * @param {number} width - Custom width to use for calculation.
  * @returns {number}
  */
-export function getMaxColumnCount(state: Object) {
+export function getMaxColumnCount() {
     const configuredMax = (typeof interfaceConfig === 'undefined'
         ? DEFAULT_MAX_COLUMNS
         : interfaceConfig.TILE_VIEW_MAX_COLUMNS) || DEFAULT_MAX_COLUMNS;
-    const { disableResponsiveTiles } = state['features/base/config'];
-
-    if (!disableResponsiveTiles) {
-        const { clientWidth } = state['features/base/responsive-ui'];
-        const participantCount = getParticipantCount(state);
-
-        // If there are just two participants in a conference, enforce single-column view for mobile size.
-        if (participantCount === 2 && clientWidth < ASPECT_RATIO_BREAKPOINT) {
-            return Math.min(1, Math.max(configuredMax, 1));
-        }
-
-        // Enforce single column view at very small screen widths.
-        if (clientWidth < SINGLE_COLUMN_BREAKPOINT) {
-            return Math.min(1, Math.max(configuredMax, 1));
-        }
-
-        // Enforce two column view below breakpoint.
-        if (clientWidth < TWO_COLUMN_BREAKPOINT) {
-            return Math.min(2, Math.max(configuredMax, 1));
-        }
-    }
 
     return Math.min(Math.max(configuredMax, 1), ABSOLUTE_MAX_COLUMNS);
 }
@@ -96,20 +73,14 @@ export function getMaxColumnCount(state: Object) {
  * which rows will be added but no more columns.
  *
  * @param {Object} state - The redux store state.
+ * @param {boolean} stageFilmstrip - Whether the dimensions should be calculated for the stage filmstrip.
  * @returns {Object} An object is return with the desired number of columns,
  * rows, and visible rows (the rest should overflow) for the tile view layout.
  */
-export function getTileViewGridDimensions(state: Object) {
+export function getNotResponsiveTileViewGridDimensions(state: Object, stageFilmstrip: boolean = false) {
     const maxColumns = getMaxColumnCount(state);
-
-    // When in tile view mode, we must discount ourselves (the local participant) because our
-    // tile is not visible.
-    const { iAmRecorder } = state['features/base/config'];
-    const disableSelfView = getDisableSelfView(state);
-    const numberOfParticipants = getParticipantCountWithFake(state)
-        - (iAmRecorder ? 1 : 0)
-        - (disableSelfView ? 1 : 0);
-
+    const { activeParticipants } = state['features/filmstrip'];
+    const numberOfParticipants = stageFilmstrip ? activeParticipants.length : getNumberOfPartipantsForTileView(state);
     const columnsToMaintainASquare = Math.ceil(Math.sqrt(numberOfParticipants));
     const columns = Math.min(columnsToMaintainASquare, maxColumns);
     const rows = Math.ceil(numberOfParticipants / columns);
@@ -223,4 +194,62 @@ export function updateAutoPinnedParticipant(
  */
 export function isLayoutTileView(state: Object) {
     return getCurrentLayout(state) === LAYOUTS.TILE_VIEW;
+}
+
+/**
+ * Gets the video quality for the given height.
+ *
+ * @param {number|undefined} height - Height of the video container.
+ * @returns {number}
+ */
+function getVideoQualityForHeight(height: number) {
+    if (!height) {
+        return VIDEO_QUALITY_LEVELS.LOW;
+    }
+    const levels = Object.values(VIDEO_QUALITY_LEVELS)
+        .map(Number)
+        .sort((a, b) => a - b);
+
+    for (const level of levels) {
+        if (height <= level) {
+            return level;
+        }
+    }
+
+    return VIDEO_QUALITY_LEVELS.ULTRA;
+}
+
+/**
+ * Gets the video quality level for the resizable filmstrip thumbnail height.
+ *
+ * @param {Object} state - Redux state.
+ * @returns {number}
+ */
+export function getVideoQualityForResizableFilmstripThumbnails(state) {
+    const height = state['features/filmstrip'].verticalViewDimensions?.gridView?.thumbnailSize?.height;
+
+    return getVideoQualityForHeight(height);
+}
+
+/**
+ * Gets the video quality for the large video.
+ *
+ * @returns {number}
+ */
+export function getVideoQualityForLargeVideo() {
+    const wrapper = document.querySelector('#largeVideoWrapper');
+
+    return getVideoQualityForHeight(wrapper.clientHeight);
+}
+
+/**
+ * Gets the video quality level for the thumbnails in the stage filmstrip.
+ *
+ * @param {Object} state - Redux state.
+ * @returns {number}
+ */
+export function getVideoQualityForStageThumbnails(state) {
+    const height = state['features/filmstrip'].stageFilmstripDimensions?.thumbnailSize?.height;
+
+    return getVideoQualityForHeight(height);
 }
