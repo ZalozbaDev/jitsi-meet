@@ -1,5 +1,9 @@
 #!/bin/bash
 
+echo "Check the documentation in lang/README.md (on Github) how to update the translation files."
+echo "e.g. cd lang && node update-translation.js main-hsb.json"
+
+
 echo 'Run "npm install" at least once.'
 make
 dpkg-buildpackage -A -rfakeroot -us -uc -tc -d
