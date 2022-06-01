@@ -8,23 +8,19 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import { openDialog } from '../../../base/dialog';
 import JitsiScreen from '../../../base/modal/components/JitsiScreen';
-import {
-    getParticipantCount,
-    isLocalParticipantModerator
-} from '../../../base/participants';
+import { isLocalParticipantModerator } from '../../../base/participants';
 import { equals } from '../../../base/redux';
 import {
     getBreakoutRooms,
-    getBreakoutRoomsConfig,
     getCurrentRoomId,
+    isAddBreakoutRoomButtonVisible,
+    isAutoAssignParticipantsVisible,
     isInBreakoutRoom
 } from '../../../breakout-rooms/functions';
-import {
-    getKnockingParticipants,
-    getLobbyEnabled
-} from '../../../lobby/functions';
+import { getKnockingParticipants } from '../../../lobby/functions';
 import MuteEveryoneDialog
     from '../../../video-menu/components/native/MuteEveryoneDialog';
+import { isMoreActionsVisible, isMuteAllVisible } from '../../functions';
 import {
     AddBreakoutRoomButton,
     AutoAssignButton,
@@ -52,34 +48,30 @@ const ParticipantsPane = () => {
         [ dispatch ]);
     const { t } = useTranslation();
 
-    const { hideAddRoomButton } = useSelector(getBreakoutRoomsConfig);
     const { conference } = useSelector(state => state['features/base/conference']);
-
-    // $FlowExpectedError
     const _isBreakoutRoomsSupported = conference?.getBreakoutRooms()?.isSupported();
     const currentRoomId = useSelector(getCurrentRoomId);
     const rooms: Array<Object> = Object.values(useSelector(getBreakoutRooms, equals))
         .filter((room: Object) => room.id !== currentRoomId)
         .sort((p1: Object, p2: Object) => (p1?.name || '').localeCompare(p2?.name || ''));
     const inBreakoutRoom = useSelector(isInBreakoutRoom);
-    const participantsCount = useSelector(getParticipantCount);
-    const autoAssign = !inBreakoutRoom && isLocalModerator
-        && participantsCount > 2 && rooms.length > 1;
-    const addBreakoutRoom
-        = _isBreakoutRoomsSupported && !hideAddRoomButton && isLocalModerator;
-    const lobbyEnabled = useSelector(getLobbyEnabled);
+    const showAddBreakoutRoom = useSelector(isAddBreakoutRoomButtonVisible);
+    const showAutoAssign = useSelector(isAutoAssignParticipantsVisible);
+    const showMoreActions = useSelector(isMoreActionsVisible);
+    const showMuteAll = useSelector(isMuteAllVisible);
     const lobbyParticipants = useSelector(getKnockingParticipants);
 
     return (
         <JitsiScreen style = { styles.participantsPaneContainer }>
             <LobbyParticipantList />
             <MeetingParticipantList
-                breakoutRooms = { _isBreakoutRoomsSupported && rooms }
-                lobbyParticipants = { lobbyEnabled && lobbyParticipants }
+                breakoutRooms = { rooms }
+                isLocalModerator = { isLocalModerator }
+                lobbyParticipants = { lobbyParticipants }
                 searchString = { searchString }
                 setSearchString = { setSearchString } />
             {
-                autoAssign && <AutoAssignButton />
+                showAutoAssign && <AutoAssignButton />
             }
             {
                 inBreakoutRoom && <LeaveBreakoutRoomButton />
@@ -92,23 +84,31 @@ const ParticipantsPane = () => {
                     searchString = { searchString } />))
             }
             {
-                addBreakoutRoom && <AddBreakoutRoomButton />
+                showAddBreakoutRoom && <AddBreakoutRoomButton />
             }
             {
                 isLocalModerator
                 && <View style = { styles.participantsPaneFooter }>
-                    <Button
-                        children = { t('participantsPane.actions.muteAll') }
-                        labelStyle = { styles.muteAllLabel }
-                        mode = 'contained'
-                        onPress = { muteAll }
-                        style = { styles.muteAllMoreButton } />
-                    <Button
-                        icon = { HorizontalDotsIcon }
-                        labelStyle = { styles.moreIcon }
-                        mode = 'contained'
-                        onPress = { openMoreMenu }
-                        style = { styles.moreButton } />
+                    {
+                        showMuteAll && (
+                            <Button
+                                children = { t('participantsPane.actions.muteAll') }
+                                labelStyle = { styles.muteAllLabel }
+                                mode = 'contained'
+                                onPress = { muteAll }
+                                style = { styles.muteAllMoreButton } />
+                        )
+                    }
+                    {
+                        showMoreActions && (
+                            <Button
+                                icon = { HorizontalDotsIcon }
+                                labelStyle = { styles.moreIcon }
+                                mode = 'contained'
+                                onPress = { openMoreMenu }
+                                style = { styles.moreButton } />
+                        )
+                    }
                 </View>
             }
         </JitsiScreen>

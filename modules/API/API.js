@@ -40,7 +40,8 @@ import {
     isParticipantModerator,
     isLocalParticipantModerator,
     hasRaisedHand,
-    grantModerator
+    grantModerator,
+    overwriteParticipantsNames
 } from '../../react/features/base/participants';
 import { updateSettings } from '../../react/features/base/settings';
 import { isToggleCameraEnabled, toggleCamera } from '../../react/features/base/tracks';
@@ -87,6 +88,8 @@ import { toggleScreenshotCaptureSummary } from '../../react/features/screenshot-
 import { isScreenshotCaptureEnabled } from '../../react/features/screenshot-capture/functions';
 import { playSharedVideo, stopSharedVideo } from '../../react/features/shared-video/actions.any';
 import { extractYoutubeIdOrURL } from '../../react/features/shared-video/functions';
+import { toggleRequestingSubtitles, setRequestingSubtitles } from '../../react/features/subtitles/actions';
+import { isAudioMuteButtonDisabled } from '../../react/features/toolbox/functions';
 import { toggleTileView, setTileView } from '../../react/features/video-layout';
 import { muteAllParticipants } from '../../react/features/video-menu/actions';
 import { setVideoQuality } from '../../react/features/video-quality';
@@ -371,6 +374,12 @@ function initCommands() {
             sendAnalytics(createApiEvent('screen.sharing.toggled'));
             toggleScreenSharing(options.enable);
         },
+        'toggle-subtitles': () => {
+            APP.store.dispatch(toggleRequestingSubtitles());
+        },
+        'set-subtitles': enabled => {
+            APP.store.dispatch(setRequestingSubtitles(enabled));
+        },
         'toggle-tile-view': () => {
             sendAnalytics(createApiEvent('tile-view.toggled'));
 
@@ -419,6 +428,11 @@ function initCommands() {
             } catch (err) {
                 logger.error('Failed sending endpoint text message', err);
             }
+        },
+        'overwrite-names': participantList => {
+            logger.debug('Overwrite names command received');
+
+            APP.store.dispatch(overwriteParticipantsNames(participantList));
         },
         'toggle-e2ee': enabled => {
             logger.debug('Toggle E2EE key command received');
@@ -693,6 +707,9 @@ function initCommands() {
         case 'is-audio-muted':
             callback(APP.conference.isLocalAudioMuted());
             break;
+        case 'is-audio-disabled':
+            callback(isAudioMuteButtonDisabled(APP.store.getState()));
+            break;
         case 'is-moderation-on': {
             const { mediaType } = request;
             const type = mediaType || MEDIA_TYPE.AUDIO;
@@ -724,6 +741,9 @@ function initCommands() {
             break;
         case 'is-sharing-screen':
             callback(Boolean(APP.conference.isSharingScreen));
+            break;
+        case 'is-start-silent':
+            callback(Boolean(APP.store.getState()['features/base/config'].startSilent));
             break;
         case 'get-content-sharing-participants': {
             const tracks = getState()['features/base/tracks'];
@@ -1142,6 +1162,21 @@ class API {
     }
 
     /**
+     * Notify external application (if API is enabled) that some face landmark data is available.
+     *
+     * @param {Object | undefined} faceBox - Detected face(s) bounding box (left, right, width).
+     * @param {string} faceExpression - Detected face expression.
+     * @returns {void}
+     */
+    notifyFaceLandmarkDetected(faceBox: Object, faceExpression: string) {
+        this._sendEvent({
+            name: 'face-landmark-detected',
+            faceBox,
+            faceExpression
+        });
+    }
+
+    /**
      * Notify external application (if API is enabled) that the list of sharing participants changed.
      *
      * @param {Object} data - The event data.
@@ -1427,6 +1462,22 @@ class API {
     }
 
     /**
+     * Notify external application (if API is enabled) that the iframe
+     * docked state has been changed. The responsibility for implementing
+     * the dock / undock functionality lies with the external application.
+     *
+     * @param {boolean} docked - Whether or not the iframe has been set to
+     * be docked or undocked.
+     * @returns {void}
+     */
+    notifyIframeDockStateChanged(docked: boolean) {
+        this._sendEvent({
+            name: 'iframe-dock-state-changed',
+            docked
+        });
+    }
+
+    /**
      * Notify external application of a participant, remote or local, being
      * removed from the conference by another participant.
      *
@@ -1628,6 +1679,19 @@ class API {
         this._sendEvent({
             name: 'browser-support',
             supported
+        });
+    }
+
+    /**
+     * Notify external application that the breakout rooms changed.
+     *
+     * @param {Array} rooms - Array of breakout rooms.
+     * @returns {void}
+     */
+    notifyBreakoutRoomsUpdated(rooms) {
+        this._sendEvent({
+            name: 'breakout-rooms-updated',
+            rooms
         });
     }
 

@@ -48,7 +48,9 @@ import {
     participantRejected
 } from './actions';
 import {
-    ASKED_TO_UNMUTE_SOUND_ID, AUDIO_MODERATION_NOTIFICATION_ID,
+    ASKED_TO_UNMUTE_NOTIFICATION_ID,
+    ASKED_TO_UNMUTE_SOUND_ID,
+    AUDIO_MODERATION_NOTIFICATION_ID,
     CS_MODERATION_NOTIFICATION_ID,
     VIDEO_MODERATION_NOTIFICATION_ID
 } from './constants';
@@ -78,6 +80,8 @@ MiddlewareRegistry.register(({ dispatch, getState }) => next => action => {
         let descriptionKey;
         let titleKey;
         let uid;
+        const localParticipant = getLocalParticipant(getState);
+        const raisedHand = hasRaisedHand(localParticipant);
 
         switch (action.mediaType) {
         case MEDIA_TYPE.AUDIO: {
@@ -100,7 +104,7 @@ MiddlewareRegistry.register(({ dispatch, getState }) => next => action => {
         dispatch(showNotification({
             customActionNameKey: [ 'notify.raiseHandAction' ],
             customActionHandler: [ () => batch(() => {
-                dispatch(raiseHand(true));
+                !raisedHand && dispatch(raiseHand(true));
                 dispatch(hideNotification(uid));
             }) ],
             descriptionKey,
@@ -222,7 +226,8 @@ StateListenerRegistry.register(
                         titleKey: 'notify.hostAskedUnmute',
                         sticky: true,
                         customActionNameKey: [ 'notify.unmute' ],
-                        customActionHandler: [ () => dispatch(muteLocal(false, MEDIA_TYPE.AUDIO)) ]
+                        customActionHandler: [ () => dispatch(muteLocal(false, MEDIA_TYPE.AUDIO)) ],
+                        uid: ASKED_TO_UNMUTE_NOTIFICATION_ID
                     }, NOTIFICATION_TIMEOUT_TYPE.MEDIUM));
                     dispatch(playSound(ASKED_TO_UNMUTE_SOUND_ID));
                 }

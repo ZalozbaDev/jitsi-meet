@@ -142,6 +142,20 @@ export const getComputedOuterHeight = (element: HTMLElement) => {
 const getState = (state: Object) => state[REDUCER_KEY];
 
 /**
+ * Returns the participants pane config.
+ *
+ * @param {Function|Object} stateful - The redux store, the redux
+ * {@code getState} function, or the redux state itself.
+ * @returns {Object}
+ */
+export const getParticipantsPaneConfig = (stateful: Function | Object) => {
+    const state = toState(stateful);
+    const { participantsPane = {} } = state['features/base/config'];
+
+    return participantsPane;
+};
+
+/**
  * Is the participants pane open.
  *
  * @param {Object} state - Global state.
@@ -261,3 +275,31 @@ export function participantMatchesSearch(participant: Object, searchString: stri
 
     return false;
 }
+
+/**
+ * Returns whether the more actions button is visible.
+ *
+ * @param {Object} state - Global state.
+ * @returns {boolean}
+ */
+export const isMoreActionsVisible = (state: Object) => {
+    const isLocalModerator = isLocalParticipantModerator(state);
+    const inBreakoutRoom = isInBreakoutRoom(state);
+    const { hideMoreActionsButton } = getParticipantsPaneConfig(state);
+
+    return inBreakoutRoom ? false : !hideMoreActionsButton && isLocalModerator;
+};
+
+/**
+ * Returns whether the mute all button is visible.
+ *
+ * @param {Object} state - Global state.
+ * @returns {boolean}
+ */
+export const isMuteAllVisible = (state: Object) => {
+    const isLocalModerator = isLocalParticipantModerator(state);
+    const inBreakoutRoom = isInBreakoutRoom(state);
+    const { hideMuteAllButton } = getParticipantsPaneConfig(state);
+
+    return inBreakoutRoom ? false : !hideMuteAllButton && isLocalModerator;
+};

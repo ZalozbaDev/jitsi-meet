@@ -16,14 +16,18 @@ import {
     PARTICIPANT_LEFT,
     PARTICIPANT_UPDATED,
     PIN_PARTICIPANT,
+    SCREENSHARE_PARTICIPANT_NAME_CHANGED,
     SET_LOADABLE_AVATAR_URL,
-    RAISE_HAND_UPDATED
+    RAISE_HAND_UPDATED,
+    OVERWRITE_PARTICIPANT_NAME,
+    OVERWRITE_PARTICIPANTS_NAMES
 } from './actionTypes';
 import {
     DISCO_REMOTE_CONTROL_FEATURE
 } from './constants';
 import {
     getLocalParticipant,
+    getVirtualScreenshareParticipantOwnerId,
     getNormalizedDisplayName,
     getParticipantDisplayName,
     getParticipantById
@@ -433,6 +437,25 @@ export function participantRoleChanged(id, role) {
 }
 
 /**
+ * Action to signal that a participant's display name has changed.
+ *
+ * @param {string} id - Screenshare participant's ID.
+ * @param {name} name - The new display name of the screenshare participant's owner.
+ * @returns {{
+ *     type: SCREENSHARE_PARTICIPANT_NAME_CHANGED,
+ *     id: string,
+ *     name: string
+ * }}
+ */
+export function screenshareParticipantDisplayNameChanged(id, name) {
+    return {
+        type: SCREENSHARE_PARTICIPANT_NAME_CHANGED,
+        id,
+        name
+    };
+}
+
+/**
  * Action to signal that some of participant properties has been changed.
  *
  * @param {Participant} participant={} - Information about participant. To
@@ -480,6 +503,29 @@ export function participantMutedUs(participant, track) {
                 participantDisplayName: getParticipantDisplayName(getState, participant.getId())
             }
         }, NOTIFICATION_TIMEOUT_TYPE.MEDIUM));
+    };
+}
+
+/**
+ * Action to create a virtual screenshare participant.
+ *
+ * @param {(string)} sourceName - JitsiTrack instance.
+ * @param {(boolean)} local - JitsiTrack instance.
+ * @returns {Function}
+ */
+export function createVirtualScreenshareParticipant(sourceName, local) {
+    return (dispatch, getState) => {
+        const state = getState();
+        const ownerId = getVirtualScreenshareParticipantOwnerId(sourceName);
+        const ownerName = getParticipantDisplayName(state, ownerId);
+
+        dispatch(participantJoined({
+            conference: state['features/base/conference'].conference,
+            id: sourceName,
+            isVirtualScreenshareParticipant: true,
+            isLocalScreenShare: local,
+            name: ownerName
+        }));
     };
 }
 
@@ -607,5 +653,33 @@ export function localParticipantAudioLevelChanged(level) {
     return {
         type: LOCAL_PARTICIPANT_AUDIO_LEVEL_CHANGED,
         level
+    };
+}
+
+/**
+ * Overwrites the name of the participant with the given id.
+ *
+ * @param {string} id - Participant id;.
+ * @param {string} name - New participant name.
+ * @returns {Object}
+ */
+export function overwriteParticipantName(id, name) {
+    return {
+        type: OVERWRITE_PARTICIPANT_NAME,
+        id,
+        name
+    };
+}
+
+/**
+ * Overwrites the names of the given participants.
+ *
+ * @param {Array<Object>} participantList - The list of participants to overwrite.
+ * @returns {Object}
+ */
+export function overwriteParticipantsNames(participantList) {
+    return {
+        type: OVERWRITE_PARTICIPANTS_NAMES,
+        participantList
     };
 }

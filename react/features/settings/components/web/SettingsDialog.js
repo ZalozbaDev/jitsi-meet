@@ -59,7 +59,13 @@ type Props = {
     /**
      * Invoked to save changed settings.
      */
-    dispatch: Function
+    dispatch: Function,
+
+    /**
+     * Indicates whether the device selection dialog is displayed on the
+     * welcome page or not.
+     */
+    isDisplayedOnWelcomePage: boolean
 };
 
 /**
@@ -253,7 +259,7 @@ class SettingsDialog extends Component<Props> {
  * }}
  */
 function _mapStateToProps(state, ownProps) {
-    const { classes } = ownProps;
+    const { classes, isDisplayedOnWelcomePage } = ownProps;
     const configuredTabs = interfaceConfig.SETTINGS_SECTIONS || [];
 
     // The settings sections to display.
@@ -276,7 +282,7 @@ function _mapStateToProps(state, ownProps) {
             component: DeviceSelection,
             label: 'settings.devices',
             onMount: getAvailableDevices,
-            props: getDeviceSelectionDialogProps(state),
+            props: getDeviceSelectionDialogProps(state, isDisplayedOnWelcomePage),
             propsUpdateFunction: (tabState, newProps) => {
                 // Ensure the device selection tab gets updated when new devices
                 // are found by taking the new props and only preserving the
@@ -292,7 +298,7 @@ function _mapStateToProps(state, ownProps) {
                 };
             },
             styles: `settings-pane ${classes.settingsDialog} devices-pane`,
-            submit: submitDeviceSelectionTab
+            submit: newState => submitDeviceSelectionTab(newState, isDisplayedOnWelcomePage)
         });
     }
 
@@ -333,8 +339,8 @@ function _mapStateToProps(state, ownProps) {
         tabs.push({
             name: SETTINGS_TABS.CALENDAR,
             component: CalendarTab,
-            label: 'settings-pane settings.calendar.title',
-            styles: `${classes.settingsDialog} calendar-pane`
+            label: 'settings.calendar.title',
+            styles: `settings-pane ${classes.settingsDialog} calendar-pane`
         });
     }
 
@@ -364,7 +370,8 @@ function _mapStateToProps(state, ownProps) {
                     currentLanguage: tabState?.currentLanguage,
                     hideSelfView: tabState?.hideSelfView,
                     showPrejoinPage: tabState?.showPrejoinPage,
-                    enabledNotifications: tabState?.enabledNotifications
+                    enabledNotifications: tabState?.enabledNotifications,
+                    maxStageParticipants: tabState?.maxStageParticipants
                 };
             },
             styles: `settings-pane ${classes.settingsDialog} more-pane`,

@@ -7,7 +7,7 @@ import { getSourceNameSignalingFeatureFlag } from '../base/config';
 import { MEDIA_TYPE } from '../base/media';
 import { getLocalParticipant, getParticipantCount } from '../base/participants';
 import { StateListenerRegistry } from '../base/redux';
-import { getTrackSourceNameByMediaTypeAndParticipant } from '../base/tracks';
+import { getRemoteScreenSharesSourceNames, getTrackSourceNameByMediaTypeAndParticipant } from '../base/tracks';
 import { reportError } from '../base/util';
 import { getActiveParticipantsIds } from '../filmstrip/functions.web';
 import {
@@ -98,10 +98,11 @@ StateListenerRegistry.register(
  * Updates the receiver constraints when the stage participants change.
  */
 StateListenerRegistry.register(
-    state => getActiveParticipantsIds(state).sort()
-        .join(),
+    state => getActiveParticipantsIds(state).sort(),
     (_, store) => {
         _updateReceiverVideoConstraints(store);
+    }, {
+        deepEquals: true
     }
 );
 
@@ -237,6 +238,8 @@ function _updateReceiverVideoConstraints({ getState }) {
     let receiverConstraints;
 
     if (sourceNameSignaling) {
+        const remoteScreenSharesSourceNames = getRemoteScreenSharesSourceNames(state, remoteScreenShares);
+
         receiverConstraints = {
             constraints: {},
             defaultConstraints: { 'maxHeight': VIDEO_QUALITY_LEVELS.NONE },
@@ -250,7 +253,13 @@ function _updateReceiverVideoConstraints({ getState }) {
 
         if (visibleRemoteParticipants?.size) {
             visibleRemoteParticipants.forEach(participantId => {
-                const sourceName = getTrackSourceNameByMediaTypeAndParticipant(tracks, MEDIA_TYPE.VIDEO, participantId);
+                let sourceName;
+
+                if (remoteScreenSharesSourceNames.includes(participantId)) {
+                    sourceName = participantId;
+                } else {
+                    sourceName = getTrackSourceNameByMediaTypeAndParticipant(tracks, MEDIA_TYPE.VIDEO, participantId);
+                }
 
                 if (sourceName) {
                     visibleRemoteTrackSourceNames.push(sourceName);
@@ -262,10 +271,13 @@ function _updateReceiverVideoConstraints({ getState }) {
         }
 
         if (localParticipantId !== largeVideoParticipantId) {
-            largeVideoSourceName = getTrackSourceNameByMediaTypeAndParticipant(
-                tracks, MEDIA_TYPE.VIDEO,
-                largeVideoParticipantId
-            );
+            if (remoteScreenSharesSourceNames.includes(largeVideoParticipantId)) {
+                largeVideoSourceName = largeVideoParticipantId;
+            } else {
+                largeVideoSourceName = getTrackSourceNameByMediaTypeAndParticipant(
+                    tracks, MEDIA_TYPE.VIDEO, largeVideoParticipantId
+                );
+            }
         }
 
         // Tile view.
@@ -279,12 +291,8 @@ function _updateReceiverVideoConstraints({ getState }) {
             });
 
             // Prioritize screenshare in tile view.
-            if (remoteScreenShares?.length) {
-                const remoteScreenShareSourceNames = remoteScreenShares.map(remoteScreenShare =>
-                    getTrackSourceNameByMediaTypeAndParticipant(tracks, MEDIA_TYPE.VIDEO, remoteScreenShare)
-                );
-
-                receiverConstraints.selectedSources = remoteScreenShareSourceNames;
+            if (remoteScreenSharesSourceNames?.length) {
+                receiverConstraints.selectedSources = remoteScreenSharesSourceNames;
             }
 
         // Stage view.
@@ -316,6 +324,12 @@ function _updateReceiverVideoConstraints({ getState }) {
                 receiverConstraints.constraints[largeVideoSourceName] = { 'maxHeight': quality };
                 receiverConstraints.onStageSources = [ largeVideoSourceName ];
             }
+        }
+
+        if (remoteScreenSharesSourceNames?.length) {
+            remoteScreenSharesSourceNames.forEach(sourceName => {
+                receiverConstraints.constraints[sourceName] = { 'maxHeight': VIDEO_QUALITY_LEVELS.ULTRA };
+            });
         }
 
     } else {

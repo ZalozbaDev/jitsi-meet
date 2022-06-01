@@ -1,10 +1,13 @@
 // @flow
 
+import { batch } from 'react-redux';
+
 import VideoLayout from '../../../modules/UI/videolayout/VideoLayout';
 import {
     DOMINANT_SPEAKER_CHANGED,
     getDominantSpeakerParticipant,
     getLocalParticipant,
+    getLocalScreenShareParticipant,
     PARTICIPANT_JOINED,
     PARTICIPANT_LEFT
 } from '../base/participants';
@@ -17,7 +20,14 @@ import {
     setTileView
 } from '../video-layout';
 
-import { ADD_STAGE_PARTICIPANT, REMOVE_STAGE_PARTICIPANT, SET_USER_FILMSTRIP_WIDTH } from './actionTypes';
+import {
+    ADD_STAGE_PARTICIPANT,
+    CLEAR_STAGE_PARTICIPANTS,
+    REMOVE_STAGE_PARTICIPANT,
+    SET_MAX_STAGE_PARTICIPANTS,
+    SET_USER_FILMSTRIP_WIDTH,
+    TOGGLE_PIN_STAGE_PARTICIPANT
+} from './actionTypes';
 import {
     addStageParticipant,
     removeStageParticipant,
@@ -33,10 +43,12 @@ import {
 import {
     isFilmstripResizable,
     updateRemoteParticipants,
-    updateRemoteParticipantsOnLeave
+    updateRemoteParticipantsOnLeave,
+    getActiveParticipantsIds,
+    getPinnedActiveParticipants,
+    isStageFilmstripAvailable
 } from './functions';
 import './subscriber';
-import { getActiveParticipantsIds, isStageFilmstripEnabled } from './functions.web';
 
 /**
  * Map of timers.
@@ -83,6 +95,10 @@ MiddlewareRegistry.register(store => next => action => {
     }
     case PARTICIPANT_JOINED: {
         result = next(action);
+        if (action.participant?.isLocalScreenShare) {
+            break;
+        }
+
         updateRemoteParticipants(store, action.participant?.id);
         break;
     }
@@ -94,10 +110,17 @@ MiddlewareRegistry.register(store => next => action => {
         if (action.settings?.disableSelfView) {
             const state = store.getState();
             const local = getLocalParticipant(state);
+            const localScreenShare = getLocalScreenShareParticipant(state);
             const activeParticipantsIds = getActiveParticipantsIds(state);
 
             if (activeParticipantsIds.find(id => id === local.id)) {
                 store.dispatch(removeStageParticipant(local.id));
+            }
+
+            if (localScreenShare) {
+                if (activeParticipantsIds.find(id => id === localScreenShare.id)) {
+                    store.dispatch(removeStageParticipant(localScreenShare.id));
+                }
             }
         }
         break;
@@ -110,7 +133,7 @@ MiddlewareRegistry.register(store => next => action => {
         const { dispatch, getState } = store;
         const { participantId, pinned } = action;
         const state = getState();
-        const { activeParticipants } = state['features/filmstrip'];
+        const { activeParticipants, maxStageParticipants } = state['features/filmstrip'];
         let queue;
 
         if (activeParticipants.find(p => p.participantId === participantId)) {
@@ -122,7 +145,8 @@ MiddlewareRegistry.register(store => next => action => {
             const tid = timers.get(participantId);
 
             clearTimeout(tid);
-        } else if (activeParticipants.length < MAX_ACTIVE_PARTICIPANTS) {
+            timers.delete(participantId);
+        } else if (activeParticipants.length < maxStageParticipants) {
             queue = [ ...activeParticipants, {
                 participantId,
                 pinned
@@ -147,13 +171,20 @@ MiddlewareRegistry.register(store => next => action => {
             }
         }
 
-        dispatch(setStageParticipants(queue));
-        if (!pinned) {
-            const timeoutId = setTimeout(() => dispatch(removeStageParticipant(participantId)),
-                ACTIVE_PARTICIPANT_TIMEOUT);
+        // If queue is undefined we haven't made any changes to the active participants. This will mostly happen
+        // if the participant that we are trying to add is not pinned and all slots are currently taken by pinned
+        // participants.
+        // IMPORTANT: setting active participants to undefined will crash jitsi-meet.
+        if (typeof queue !== 'undefined') {
+            dispatch(setStageParticipants(queue));
+            if (!pinned) {
+                const timeoutId = setTimeout(() => dispatch(removeStageParticipant(participantId)),
+                    ACTIVE_PARTICIPANT_TIMEOUT);
 
-            timers.set(participantId, timeoutId);
+                timers.set(participantId, timeoutId);
+            }
         }
+
         if (getCurrentLayout(state) === LAYOUTS.TILE_VIEW) {
             dispatch(setTileView(false));
         }
@@ -181,22 +212,91 @@ MiddlewareRegistry.register(store => next => action => {
     case DOMINANT_SPEAKER_CHANGED: {
         const { id } = action.participant;
         const state = store.getState();
-        const stageFilmstrip = isStageFilmstripEnabled(state);
+        const stageFilmstrip = isStageFilmstripAvailable(state);
+        const local = getLocalParticipant(state);
         const currentLayout = getCurrentLayout(state);
 
-        if (stageFilmstrip && currentLayout === LAYOUTS.VERTICAL_FILMSTRIP_VIEW) {
-            store.dispatch(addStageParticipant(id));
+        if (id === local.id || currentLayout === LAYOUTS.TILE_VIEW) {
+            break;
+        }
+
+        if (stageFilmstrip) {
+            const isPinned = getPinnedActiveParticipants(state).some(p => p.participantId === id);
+
+            store.dispatch(addStageParticipant(id, Boolean(isPinned)));
         }
         break;
     }
     case PARTICIPANT_LEFT: {
+        const state = store.getState();
         const { id } = action.participant;
-        const activeParticipantsIds = getActiveParticipantsIds(store.getState());
+        const activeParticipantsIds = getActiveParticipantsIds(state);
 
         if (activeParticipantsIds.find(pId => pId === id)) {
-            store.dispatch(removeStageParticipant(id));
+            const tid = timers.get(id);
+            const { activeParticipants } = state['features/filmstrip'];
+
+            clearTimeout(tid);
+            timers.delete(id);
+            store.dispatch(setStageParticipants(activeParticipants.filter(p => p.participantId !== id)));
         }
         break;
+    }
+    case SET_MAX_STAGE_PARTICIPANTS: {
+        const { maxParticipants } = action;
+        const { activeParticipants } = store.getState()['features/filmstrip'];
+        const newMax = Math.min(MAX_ACTIVE_PARTICIPANTS, maxParticipants);
+
+        action.maxParticipants = newMax;
+
+        if (newMax < activeParticipants.length) {
+            const toRemove = activeParticipants.slice(0, activeParticipants.length - newMax);
+
+            batch(() => {
+                toRemove.forEach(p => store.dispatch(removeStageParticipant(p.participantId)));
+            });
+        }
+        break;
+    }
+    case TOGGLE_PIN_STAGE_PARTICIPANT: {
+        const { dispatch, getState } = store;
+        const state = getState();
+        const { participantId } = action;
+        const pinnedParticipants = getPinnedActiveParticipants(state);
+        const dominant = getDominantSpeakerParticipant(state);
+
+        if (pinnedParticipants.find(p => p.participantId === participantId)) {
+            if (dominant?.id === participantId) {
+                const { activeParticipants } = state['features/filmstrip'];
+                const queue = activeParticipants.map(p => {
+                    if (p.participantId === participantId) {
+                        return {
+                            participantId,
+                            pinned: false
+                        };
+                    }
+
+                    return p;
+                });
+
+                dispatch(setStageParticipants(queue));
+            } else {
+                dispatch(removeStageParticipant(participantId));
+            }
+        } else {
+            dispatch(addStageParticipant(participantId, true));
+        }
+        break;
+    }
+    case CLEAR_STAGE_PARTICIPANTS: {
+        const activeParticipants = getActiveParticipantsIds(store.getState());
+
+        activeParticipants.forEach(pId => {
+            const tid = timers.get(pId);
+
+            clearTimeout(tid);
+            timers.delete(pId);
+        });
     }
     }
 

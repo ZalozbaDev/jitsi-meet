@@ -1,7 +1,7 @@
 // @flow
 
 import { isMobileBrowser } from '../base/environment/utils';
-import { getParticipantCountWithFake } from '../base/participants';
+import { getParticipantCountWithFake, pinParticipant } from '../base/participants';
 import { StateListenerRegistry } from '../base/redux';
 import { clientResized } from '../base/responsive-ui';
 import { shouldHideSelfView } from '../base/settings';
@@ -12,6 +12,7 @@ import { setOverflowDrawer } from '../toolbox/actions.web';
 import { getCurrentLayout, shouldDisplayTileView, LAYOUTS } from '../video-layout';
 
 import {
+    clearStageParticipants,
     setHorizontalViewDimensions,
     setStageFilmstripViewDimensions,
     setTileViewDimensions,
@@ -22,10 +23,7 @@ import {
     DISPLAY_DRAWER_THRESHOLD
 } from './constants';
 import {
-    isFilmstripResizable,
-    isFilmstripScrollVisible,
-    shouldDisplayStageFilmstrip,
-    updateRemoteParticipants
+    isFilmstripResizable
 } from './functions';
 
 import './subscriber.any';
@@ -38,7 +36,8 @@ StateListenerRegistry.register(
     /* selector */ state => {
         return {
             numberOfParticipants: getParticipantCountWithFake(state),
-            disableSelfView: shouldHideSelfView(state)
+            disableSelfView: shouldHideSelfView(state),
+            localScreenShare: state['features/base/participants'].localScreenShare
         };
     },
     /* listener */ (currentState, store) => {
@@ -60,8 +59,13 @@ StateListenerRegistry.register(
  */
 StateListenerRegistry.register(
     /* selector */ state => {
-        return { layout: getCurrentLayout(state),
-            width: state['features/base/responsive-ui'].clientWidth };
+        const { clientHeight, clientWidth } = state['features/base/responsive-ui'];
+
+        return {
+            layout: getCurrentLayout(state),
+            height: clientHeight,
+            width: clientWidth
+        };
     },
     /* listener */ ({ layout }, store) => {
         switch (layout) {
@@ -73,6 +77,12 @@ StateListenerRegistry.register(
             break;
         case LAYOUTS.VERTICAL_FILMSTRIP_VIEW:
             store.dispatch(setVerticalViewDimensions());
+            if (store.getState()['features/filmstrip'].activeParticipants.length > 1) {
+                store.dispatch(clearStageParticipants());
+            }
+            break;
+        case LAYOUTS.STAGE_FILMSTRIP_VIEW:
+            store.dispatch(pinParticipant(null));
             break;
         }
     }, {
@@ -155,13 +165,6 @@ StateListenerRegistry.register(
     });
 
 /**
- * Listens for changes in the filmstrip scroll visibility.
- */
-StateListenerRegistry.register(
-    /* selector */ state => isFilmstripScrollVisible(state),
-    /* listener */ (_, store) => updateRemoteParticipants(store));
-
-/**
  * Listens for changes to determine the size of the stage filmstrip tiles.
  */
 StateListenerRegistry.register(
@@ -172,11 +175,12 @@ StateListenerRegistry.register(
             width: state['features/filmstrip'].width?.current,
             visible: state['features/filmstrip'].visible,
             clientWidth: state['features/base/responsive-ui'].clientWidth,
+            clientHeight: state['features/base/responsive-ui'].clientHeight,
             tileView: state['features/video-layout'].tileViewEnabled
         };
     },
     /* listener */(_, store) => {
-        if (shouldDisplayStageFilmstrip(store.getState())) {
+        if (getCurrentLayout(store.getState()) === LAYOUTS.STAGE_FILMSTRIP_VIEW) {
             store.dispatch(setStageFilmstripViewDimensions());
         }
     }, {

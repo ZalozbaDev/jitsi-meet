@@ -4,7 +4,7 @@ import { JitsiRecordingConstants } from '../base/lib-jitsi-meet';
 import { getLocalParticipant, isLocalParticipantModerator } from '../base/participants';
 import { isInBreakoutRoom } from '../breakout-rooms/functions';
 import { isEnabled as isDropboxEnabled } from '../dropbox';
-import { extractFqnFromPath } from '../dynamic-branding';
+import { extractFqnFromPath } from '../dynamic-branding/functions.any';
 
 import { RECORDING_STATUS_PRIORITIES, RECORDING_TYPES } from './constants';
 import logger from './logger';
@@ -215,7 +215,7 @@ export async function sendMeetingHighlight(state: Object) {
 
     const reqBody = {
         meetingFqn: extractFqnFromPath(state),
-        sessionId: conference.sessionId,
+        sessionId: conference.getMeetingUniqueId(),
         submitted: Date.now(),
         participantId: localParticipant.jwtId,
         participantName: localParticipant.name,

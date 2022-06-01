@@ -6,12 +6,14 @@ import { withSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { appNavigate } from '../../../app/actions';
 import { PIP_ENABLED, FULLSCREEN_ENABLED, getFeatureFlag } from '../../../base/flags';
+import { getParticipantCount } from '../../../base/participants';
 import { Container, LoadingIndicator, TintedView } from '../../../base/react';
 import { connect } from '../../../base/redux';
 import { ASPECT_RATIO_NARROW } from '../../../base/responsive-ui/constants';
 import { TestConnectionInfo } from '../../../base/testing';
 import { ConferenceNotification, isCalendarEnabled } from '../../../calendar-sync';
 import { DisplayNameLabel } from '../../../display-name';
+import { BrandingImageBackground } from '../../../dynamic-branding';
 import {
     FILMSTRIP_SIZE,
     Filmstrip,
@@ -34,6 +36,7 @@ import {
     abstractMapStateToProps
 } from '../AbstractConference';
 import type { AbstractProps } from '../AbstractConference';
+import { isConnecting } from '../functions';
 
 import AlwaysOnLabels from './AlwaysOnLabels';
 import ExpandedLabelPopup from './ExpandedLabelPopup';
@@ -52,6 +55,16 @@ type Props = AbstractProps & {
      * Application's aspect ratio.
      */
     _aspectRatio: Symbol,
+
+    /**
+     * Branding styles for conference.
+     */
+    _brandingStyles: Object,
+
+    /**
+     * Branding image background.
+     */
+    _brandingImageBackgroundUrl: string,
 
     /**
      * Wherther the calendar feature is enabled or not.
@@ -75,6 +88,11 @@ type Props = AbstractProps & {
      * The indicator which determines whether fullscreen (immersive) mode is enabled.
      */
     _fullscreenEnabled: boolean,
+
+    /**
+     * The indicator which determines if the conference type is one to one.
+     */
+    _isOneToOneConference: boolean,
 
     /**
      * The indicator which determines if the participants pane is open.
@@ -177,7 +195,7 @@ class Conference extends AbstractConference<Props, State> {
         const { _showLobby } = this.props;
 
         if (!prevProps._showLobby && _showLobby) {
-            navigate(screen.lobby);
+            navigate(screen.lobby.root);
         }
 
         if (prevProps._showLobby && !_showLobby) {
@@ -207,10 +225,20 @@ class Conference extends AbstractConference<Props, State> {
      * @returns {ReactElement}
      */
     render() {
-        const { _fullscreenEnabled } = this.props;
+        const {
+            _brandingImageBackgroundUrl,
+            _brandingStyles,
+            _fullscreenEnabled
+        } = this.props;
 
         return (
-            <Container style = { styles.conference }>
+            <Container
+                style = { [
+                    styles.conference,
+                    _brandingStyles
+                ] }>
+                <BrandingImageBackground
+                    uri = { _brandingImageBackgroundUrl } />
                 <StatusBar
                     barStyle = 'light-content'
                     hidden = { _fullscreenEnabled }
@@ -315,6 +343,7 @@ class Conference extends AbstractConference<Props, State> {
     _renderContent() {
         const {
             _connecting,
+            _isOneToOneConference,
             _largeVideoParticipantId,
             _reducedUI,
             _shouldDisplayTileView,
@@ -357,9 +386,15 @@ class Conference extends AbstractConference<Props, State> {
 
                     <Captions onPress = { this._onClick } />
 
-                    { _shouldDisplayTileView || <Container style = { styles.displayNameContainer }>
-                        <DisplayNameLabel participantId = { _largeVideoParticipantId } />
-                    </Container> }
+                    {
+                        _shouldDisplayTileView || (
+                            !_isOneToOneConference
+                            && <Container style = { styles.displayNameContainer }>
+                                <DisplayNameLabel
+                                    participantId = { _largeVideoParticipantId } />
+                            </Container>
+                        )
+                    }
 
                     <LonelyMeetingExperience />
 
@@ -483,35 +518,24 @@ class Conference extends AbstractConference<Props, State> {
  * @returns {Props}
  */
 function _mapStateToProps(state) {
-    const { connecting, connection } = state['features/base/connection'];
-    const {
-        conference,
-        joining,
-        membersOnly,
-        leaving
-    } = state['features/base/conference'];
     const { isOpen } = state['features/participants-pane'];
     const { aspectRatio, reducedUI } = state['features/base/responsive-ui'];
-
-    // XXX There is a window of time between the successful establishment of the
-    // XMPP connection and the subsequent commencement of joining the MUC during
-    // which the app does not appear to be doing anything according to the redux
-    // state. In order to not toggle the _connecting props during the window of
-    // time in question, define _connecting as follows:
-    // - the XMPP connection is connecting, or
-    // - the XMPP connection is connected and the conference is joining, or
-    // - the XMPP connection is connected and we have no conference yet, nor we
-    //   are leaving one.
-    const connecting_
-        = connecting || (connection && (!membersOnly && (joining || (!conference && !leaving))));
+    const { backgroundColor, backgroundImageUrl } = state['features/dynamic-branding'];
+    const participantCount = getParticipantCount(state);
+    const brandingStyles = backgroundColor ? {
+        backgroundColor
+    } : undefined;
 
     return {
         ...abstractMapStateToProps(state),
         _aspectRatio: aspectRatio,
+        _brandingStyles: brandingStyles,
+        _brandingImageBackgroundUrl: backgroundImageUrl,
         _calendarEnabled: isCalendarEnabled(state),
-        _connecting: Boolean(connecting_),
+        _connecting: isConnecting(state),
         _filmstripVisible: isFilmstripVisible(state),
         _fullscreenEnabled: getFeatureFlag(state, FULLSCREEN_ENABLED, true),
+        _isOneToOneConference: Boolean(participantCount === 2),
         _isParticipantsPaneOpen: isOpen,
         _largeVideoParticipantId: state['features/large-video'].participantId,
         _pictureInPictureEnabled: getFeatureFlag(state, PIP_ENABLED),

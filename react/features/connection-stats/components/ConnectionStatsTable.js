@@ -92,6 +92,11 @@ type Props = {
     isLocalVideo: boolean,
 
     /**
+     * Whether or not the statistics are for screen share.
+     */
+    isVirtualScreenshareParticipant: boolean,
+
+    /**
      * The send-side max enabled resolution (aka the highest layer that is not
      * suspended on the send-side).
      */
@@ -156,7 +161,12 @@ type Props = {
     /**
      * Statistics related to transports.
      */
-    transport: Array<Object>
+    transport: Array<Object>,
+
+    /**
+     * Whether source name signaling is enabled.
+     */
+    sourceNameSignalingEnabled: boolean
 };
 
 /**
@@ -231,8 +241,18 @@ class ConnectionStatsTable extends Component<Props> {
      * @returns {ReactElement}
      */
     render() {
-        const { isLocalVideo, enableSaveLogs, disableShowMoreStats, classes } = this.props;
+        const {
+            classes,
+            disableShowMoreStats,
+            enableSaveLogs,
+            isVirtualScreenshareParticipant,
+            isLocalVideo
+        } = this.props;
         const className = clsx(classes.connectionStatsTable, { [classes.mobile]: isMobileBrowser() });
+
+        if (isVirtualScreenshareParticipant) {
+            return this._renderScreenShareStatus();
+        }
 
         return (
             <ContextMenu
@@ -251,6 +271,31 @@ class ConnectionStatsTable extends Component<Props> {
                 </div>
             </ContextMenu>
         );
+    }
+
+    /**
+     * Creates a ReactElement that will display connection statistics for a screen share thumbnail.
+     *
+     * @private
+     * @returns {ReactElement}
+     */
+    _renderScreenShareStatus() {
+        const { classes } = this.props;
+        const className = clsx(classes.connectionStatsTable, { [classes.mobile]: isMobileBrowser() });
+
+        return (<ContextMenu
+            className = { classes.contextMenu }
+            hidden = { false }
+            inDrawer = { true }>
+            <div
+                className = { className }
+                onClick = { onClick }>
+                <tbody>
+                    { this._renderResolution() }
+                    { this._renderFrameRate() }
+                </tbody>
+            </div>
+        </ContextMenu>);
     }
 
     /**
@@ -407,7 +452,7 @@ class ConnectionStatsTable extends Component<Props> {
      * @returns {ReactElement}
      */
     _renderCodecs() {
-        const { codec, t } = this.props;
+        const { codec, t, sourceNameSignalingEnabled } = this.props;
 
         if (!codec) {
             return;
@@ -415,13 +460,17 @@ class ConnectionStatsTable extends Component<Props> {
 
         let codecString;
 
-        // Only report one codec, in case there are multiple for a user.
-        Object.keys(codec || {})
-            .forEach(ssrc => {
-                const { audio, video } = codec[ssrc];
+        if (sourceNameSignalingEnabled) {
+            codecString = `${codec.audio}, ${codec.video}`;
+        } else {
+            // Only report one codec, in case there are multiple for a user.
+            Object.keys(codec || {})
+                .forEach(ssrc => {
+                    const { audio, video } = codec[ssrc];
 
-                codecString = `${audio}, ${video}`;
-            });
+                    codecString = `${audio}, ${video}`;
+                });
+        }
 
         if (!codecString) {
             codecString = 'N/A';
@@ -542,10 +591,17 @@ class ConnectionStatsTable extends Component<Props> {
      * @returns {ReactElement}
      */
     _renderFrameRate() {
-        const { framerate, t } = this.props;
-        const frameRateString = Object.keys(framerate || {})
-            .map(ssrc => framerate[ssrc])
-            .join(', ') || 'N/A';
+        const { framerate, t, sourceNameSignalingEnabled } = this.props;
+
+        let frameRateString;
+
+        if (sourceNameSignalingEnabled) {
+            frameRateString = framerate || 'N/A';
+        } else {
+            frameRateString = Object.keys(framerate || {})
+                .map(ssrc => framerate[ssrc])
+                .join(', ') || 'N/A';
+        }
 
         return (
             <tr>
@@ -607,14 +663,20 @@ class ConnectionStatsTable extends Component<Props> {
      * @returns {ReactElement}
      */
     _renderResolution() {
-        const { resolution, maxEnabledResolution, t } = this.props;
-        let resolutionString = Object.keys(resolution || {})
-            .map(ssrc => {
-                const { width, height } = resolution[ssrc];
+        const { resolution, maxEnabledResolution, t, sourceNameSignalingEnabled } = this.props;
+        let resolutionString;
 
-                return `${width}x${height}`;
-            })
-            .join(', ') || 'N/A';
+        if (sourceNameSignalingEnabled) {
+            resolutionString = resolution ? `${resolution.width}x${resolution.height}` : 'N/A';
+        } else {
+            resolutionString = Object.keys(resolution || {})
+                .map(ssrc => {
+                    const { width, height } = resolution[ssrc];
+
+                    return `${width}x${height}`;
+                })
+                .join(', ') || 'N/A';
+        }
 
         if (maxEnabledResolution && maxEnabledResolution < 720) {
             const maxEnabledResolutionTitle = t('connectionindicator.maxEnabledResolution');

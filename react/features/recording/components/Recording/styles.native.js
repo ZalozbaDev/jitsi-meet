@@ -8,7 +8,6 @@ export const DROPBOX_LOGO = require('../../../../../images/dropboxLogo_square.pn
 export const ICON_CLOUD = require('../../../../../images/icon-cloud.png');
 export const ICON_INFO = require('../../../../../images/icon-info.png');
 export const ICON_USERS = require('../../../../../images/icon-users.png');
-export const JITSI_LOGO = require('../../../../../images/jitsiLogo_square.png');
 export const TRACK_COLOR = BaseTheme.palette.ui15;
 
 
@@ -42,7 +41,8 @@ const title = {
 const baseHighlightDialogButton = {
     borderRadius: BaseTheme.shape.borderRadius,
     height: BaseTheme.spacing[7],
-    flex: 1
+    flex: 1,
+    justifyContent: 'space-around'
 };
 
 const baseHighlightDialogLabel = {
@@ -101,7 +101,7 @@ export default {
     },
     highlightDialogButtonsContainer: {
         display: 'flex',
-        flexDirection: 'row'
+        flexDirection: 'column-reverse'
     },
     highlightDialogCancelButton: {
         ...baseHighlightDialogButton,
@@ -120,8 +120,8 @@ export default {
         color: BaseTheme.palette.text01
     },
     highlightDialogButtonsSpace: {
-        width: 16,
-        height: '100%'
+        height: 16,
+        width: '100%'
     }
 
 };

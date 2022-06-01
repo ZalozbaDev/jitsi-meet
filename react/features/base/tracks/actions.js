@@ -6,8 +6,9 @@ import {
 } from '../../analytics';
 import { NOTIFICATION_TIMEOUT_TYPE, showErrorNotification, showNotification } from '../../notifications';
 import { getCurrentConference } from '../conference';
-import { getMultipleVideoSupportFeatureFlag } from '../config';
-import { JitsiTrackErrors, JitsiTrackEvents, createLocalTrack } from '../lib-jitsi-meet';
+import { getMultipleVideoSendingSupportFeatureFlag } from '../config';
+import { JitsiTrackErrors, JitsiTrackEvents } from '../lib-jitsi-meet';
+import { createLocalTrack } from '../lib-jitsi-meet/functions';
 import {
     CAMERA_FACING_MODE,
     MEDIA_TYPE,
@@ -58,7 +59,7 @@ export function addLocalTrack(newTrack) {
         }
 
         const setMuted = newTrack.isVideoTrack()
-            ? getMultipleVideoSupportFeatureFlag(getState())
+            ? getMultipleVideoSendingSupportFeatureFlag(getState())
             && newTrack.getVideoType() === VIDEO_TYPE.DESKTOP
                 ? setScreenshareMuted
                 : setVideoMuted
@@ -369,7 +370,8 @@ function replaceStoredTracks(oldTrack, newTrack) {
             // state. If this is not done, the current mute state of the app will be reflected on the track,
             // not vice-versa.
             const setMuted = newTrack.isVideoTrack()
-                ? getMultipleVideoSupportFeatureFlag(getState()) && newTrack.getVideoType() === VIDEO_TYPE.DESKTOP
+                ? getMultipleVideoSendingSupportFeatureFlag(getState())
+                    && newTrack.getVideoType() === VIDEO_TYPE.DESKTOP
                     ? setScreenshareMuted
                     : setVideoMuted
                 : setAudioMuted;
@@ -402,7 +404,8 @@ export function trackAdded(track) {
 
         // participantId
         const local = track.isLocal();
-        const mediaType = getMultipleVideoSupportFeatureFlag(getState()) && track.getVideoType() === VIDEO_TYPE.DESKTOP
+        const mediaType = getMultipleVideoSendingSupportFeatureFlag(getState())
+            && track.getVideoType() === VIDEO_TYPE.DESKTOP
             ? MEDIA_TYPE.SCREENSHARE
             : track.getType();
         let isReceivingData, noDataFromSourceNotificationInfo, participantId;

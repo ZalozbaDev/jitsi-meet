@@ -2,10 +2,12 @@
 import React, { Component } from 'react';
 import { shouldComponentUpdate } from 'react-window';
 
+import { getSourceNameSignalingFeatureFlag } from '../../../base/config';
 import { getLocalParticipant } from '../../../base/participants';
 import { connect } from '../../../base/redux';
 import { shouldHideSelfView } from '../../../base/settings/functions.any';
 import { getCurrentLayout, LAYOUTS } from '../../../video-layout';
+import { TILE_ASPECT_RATIO, TILE_HORIZONTAL_MARGIN } from '../../constants';
 import { showGridInVerticalView, getActiveParticipantsIds } from '../../functions';
 
 import Thumbnail from './Thumbnail';
@@ -31,9 +33,20 @@ type Props = {
     _participantID: ?string,
 
     /**
+     * Whether or not the thumbnail is a local screen share.
+     */
+    _isLocalScreenShare: boolean,
+
+    /**
      * Whether or not the filmstrip is used a stage filmstrip.
      */
     _stageFilmstrip: boolean,
+
+    /**
+     * The width of the thumbnail. Used for expanding the width of the thumbnails on last row in case
+     * there is empty space.
+     */
+    _thumbnailWidth: number,
 
     /**
      * The index of the column in tile view.
@@ -84,9 +97,11 @@ class ThumbnailWrapper extends Component<Props> {
     render() {
         const {
             _disableSelfView,
+            _isLocalScreenShare = false,
             _horizontalOffset = 0,
             _participantID,
             _stageFilmstrip,
+            _thumbnailWidth,
             style
         } = this.props;
 
@@ -100,7 +115,19 @@ class ThumbnailWrapper extends Component<Props> {
                     horizontalOffset = { _horizontalOffset }
                     key = 'local'
                     stageFilmstrip = { _stageFilmstrip }
-                    style = { style } />);
+                    style = { style }
+                    width = { _thumbnailWidth } />);
+        }
+
+        if (_isLocalScreenShare) {
+            return _disableSelfView ? null : (
+                <Thumbnail
+                    horizontalOffset = { _horizontalOffset }
+                    key = 'localScreenShare'
+                    participantID = { _participantID }
+                    stageFilmstrip = { _stageFilmstrip }
+                    style = { style }
+                    width = { _thumbnailWidth } />);
         }
 
         return (
@@ -109,7 +136,8 @@ class ThumbnailWrapper extends Component<Props> {
                 key = { `remote_${_participantID}` }
                 participantID = { _participantID }
                 stageFilmstrip = { _stageFilmstrip }
-                style = { style } />);
+                style = { style }
+                width = { _thumbnailWidth } />);
     }
 }
 
@@ -128,9 +156,11 @@ function _mapStateToProps(state, ownProps) {
     const { testing = {} } = state['features/base/config'];
     const disableSelfView = shouldHideSelfView(state);
     const enableThumbnailReordering = testing.enableThumbnailReordering ?? true;
+    const sourceNameSignalingEnabled = getSourceNameSignalingFeatureFlag(state);
     const _verticalViewGrid = showGridInVerticalView(state);
     const stageFilmstrip = ownProps.data?.stageFilmstrip;
-    const remoteParticipants = stageFilmstrip ? activeParticipants : remote;
+    const sortedActiveParticipants = activeParticipants.sort();
+    const remoteParticipants = stageFilmstrip ? sortedActiveParticipants : remote;
     const remoteParticipantsLength = remoteParticipants.length;
     const localId = getLocalParticipant(state).id;
 
@@ -150,17 +180,51 @@ function _mapStateToProps(state, ownProps) {
         }
         const { columns, rows } = gridDimensions;
         const index = (rowIndex * columns) + columnIndex;
-        let horizontalOffset;
-        const { iAmRecorder } = state['features/base/config'];
-        const participantsLength = stageFilmstrip ? remoteParticipantsLength
-            : remoteParticipantsLength + (iAmRecorder ? 0 : 1) - (disableSelfView ? 1 : 0);
+        let horizontalOffset, thumbnailWidth;
+        const { iAmRecorder, disableTileEnlargement } = state['features/base/config'];
+        const { localScreenShare } = state['features/base/participants'];
+        const localParticipantsLength = localScreenShare ? 2 : 1;
+
+        let participantsLength;
+
+        if (stageFilmstrip) {
+            // We use the length of activeParticipants in stage filmstrip which includes local participants.
+            participantsLength = remoteParticipantsLength;
+        } else if (sourceNameSignalingEnabled) {
+            // We need to include the local screenshare participant in tile view.
+            participantsLength = remoteParticipantsLength
+
+            // Add local camera and screen share to total participant count when self view is not disabled.
+            + (disableSelfView ? 0 : localParticipantsLength)
+
+            // Removes iAmRecorder from the total participants count.
+            - (iAmRecorder ? 1 : 0);
+        } else {
+            participantsLength = remoteParticipantsLength + (iAmRecorder ? 0 : 1) - (disableSelfView ? 1 : 0);
+        }
 
         if (rowIndex === rows - 1) { // center the last row
-            const { width: thumbnailWidth } = thumbnailSize;
             const partialLastRowParticipantsNumber = participantsLength % columns;
 
             if (partialLastRowParticipantsNumber > 0) {
-                horizontalOffset = Math.floor((columns - partialLastRowParticipantsNumber) * (thumbnailWidth + 4) / 2);
+                const { width, height } = thumbnailSize;
+                const availableWidth = columns * (width + TILE_HORIZONTAL_MARGIN);
+                let widthDifference = 0;
+                let widthToUse = width;
+
+                if (!disableTileEnlargement) {
+                    thumbnailWidth = Math.min(
+                        (availableWidth / partialLastRowParticipantsNumber) - TILE_HORIZONTAL_MARGIN,
+                        height * TILE_ASPECT_RATIO);
+                    widthDifference = thumbnailWidth - width;
+                    widthToUse = thumbnailWidth;
+                }
+
+                horizontalOffset
+                    = Math.floor((availableWidth
+                        - (partialLastRowParticipantsNumber * (widthToUse + TILE_HORIZONTAL_MARGIN))) / 2
+                    )
+                    + (columnIndex * widthDifference);
             }
         }
 
@@ -173,25 +237,49 @@ function _mapStateToProps(state, ownProps) {
                 _disableSelfView: disableSelfView,
                 _participantID: remoteParticipants[index] === localId ? 'local' : remoteParticipants[index],
                 _horizontalOffset: horizontalOffset,
-                _stageFilmstrip: stageFilmstrip
+                _stageFilmstrip: stageFilmstrip,
+                _thumbnailWidth: thumbnailWidth
             };
         }
 
         // When the thumbnails are reordered, local participant is inserted at index 0.
         const localIndex = enableThumbnailReordering && !disableSelfView ? 0 : remoteParticipantsLength;
-        const remoteIndex = enableThumbnailReordering && !iAmRecorder && !disableSelfView ? index - 1 : index;
+
+        // Local screen share is inserted at index 1 after the local camera.
+        const localScreenShareIndex = enableThumbnailReordering && !disableSelfView ? 1 : remoteParticipantsLength;
+
+        let remoteIndex;
+
+        if (sourceNameSignalingEnabled) {
+            remoteIndex = enableThumbnailReordering && !iAmRecorder && !disableSelfView
+                ? index - localParticipantsLength : index;
+        } else {
+            remoteIndex = enableThumbnailReordering && !iAmRecorder && !disableSelfView ? index - 1 : index;
+        }
 
         if (!iAmRecorder && index === localIndex) {
             return {
                 _disableSelfView: disableSelfView,
                 _participantID: 'local',
-                _horizontalOffset: horizontalOffset
+                _horizontalOffset: horizontalOffset,
+                _thumbnailWidth: thumbnailWidth
+            };
+        }
+
+        if (sourceNameSignalingEnabled && !iAmRecorder && localScreenShare && index === localScreenShareIndex) {
+            return {
+                _disableSelfView: disableSelfView,
+                _isLocalScreenShare: true,
+                _participantID: localScreenShare?.id,
+                _horizontalOffset: horizontalOffset,
+                _thumbnailWidth: thumbnailWidth
             };
         }
 
         return {
             _participantID: remoteParticipants[remoteIndex],
-            _horizontalOffset: horizontalOffset
+            _horizontalOffset: horizontalOffset,
+            _thumbnailWidth: thumbnailWidth
         };
     }
 

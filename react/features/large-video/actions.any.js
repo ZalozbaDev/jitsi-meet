@@ -9,7 +9,7 @@ import {
     getPinnedParticipant,
     getRemoteParticipants
 } from '../base/participants';
-import { isStageFilmstripEnabled } from '../filmstrip/functions';
+import { isStageFilmstripAvailable } from '../filmstrip/functions';
 
 import {
     SELECT_LARGE_VIDEO_PARTICIPANT,
@@ -29,6 +29,10 @@ import {
 export function selectParticipantInLargeVideo(participant: ?string) {
     return (dispatch: Dispatch<any>, getState: Function) => {
         const state = getState();
+
+        if (isStageFilmstripAvailable(state, 2)) {
+            return;
+        }
 
         // Keep Etherpad open.
         if (state['features/etherpad'].editing) {
@@ -103,7 +107,7 @@ function _electLastVisibleRemoteVideo(tracks) {
  * @returns {(string|undefined)}
  */
 function _electParticipantInLargeVideo(state) {
-    const stageFilmstrip = isStageFilmstripEnabled(state);
+    const stageFilmstrip = isStageFilmstripAvailable(state);
     let participant;
 
     if (!stageFilmstrip) {

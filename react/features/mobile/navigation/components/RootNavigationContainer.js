@@ -1,12 +1,10 @@
-// @flow
-
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-import React from 'react';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import React, { useCallback } from 'react';
 
 import { connect } from '../../../base/redux';
 import { DialInSummary } from '../../../invite';
+import { _ROOT_NAVIGATION_READY } from '../actionTypes';
 import { rootNavigationRef } from '../rootNavigationContainerRef';
 import { screen } from '../routes';
 import {
@@ -27,52 +25,64 @@ const RootStack = createStackNavigator();
 type Props = {
 
     /**
+     * Redux dispatch function.
+     */
+    dispatch: Function,
+
+    /**
     * Is welcome page available?
     */
     isWelcomePageAvailable: boolean
 }
 
 
-const RootNavigationContainer = ({ isWelcomePageAvailable }: Props) => {
+const RootNavigationContainer = ({ dispatch, isWelcomePageAvailable }: Props) => {
     const initialRouteName = isWelcomePageAvailable
         ? screen.root : screen.connecting;
+    const onReady = useCallback(() => {
+        dispatch({
+            type: _ROOT_NAVIGATION_READY,
+            ready: true
+        });
+    }, [ dispatch ]);
 
     return (
-        <SafeAreaProvider>
-            <NavigationContainer
-                independent = { true }
-                ref = { rootNavigationRef }
-                theme = { navigationContainerTheme }>
-                <RootStack.Navigator
-                    initialRouteName = { initialRouteName }>
-                    {
-                        isWelcomePageAvailable
-                            && <RootStack.Screen
+        <NavigationContainer
+            independent = { true }
+            onReady = { onReady }
+            ref = { rootNavigationRef }
+            theme = { navigationContainerTheme }>
+            <RootStack.Navigator
+                initialRouteName = { initialRouteName }>
+                {
+                    isWelcomePageAvailable
+                        && <>
+                            <RootStack.Screen
                                 component = { WelcomePageNavigationContainer }
                                 name = { screen.root }
                                 options = { drawerNavigatorScreenOptions } />
-                    }
-                    <RootStack.Screen
-                        component = { ConnectingPage }
-                        name = { screen.connecting }
-                        options = {{
-                            gestureEnabled: false,
-                            headerShown: false
-                        }} />
-                    <RootStack.Screen
-                        component = { DialInSummary }
-                        name = { screen.dialInSummary }
-                        options = { dialInSummaryScreenOptions } />
-                    <RootStack.Screen
-                        component = { ConferenceNavigationContainer }
-                        name = { screen.conference.root }
-                        options = {{
-                            gestureEnabled: false,
-                            headerShown: false
-                        }} />
-                </RootStack.Navigator>
-            </NavigationContainer>
-        </SafeAreaProvider>
+                            <RootStack.Screen
+                                component = { DialInSummary }
+                                name = { screen.dialInSummary }
+                                options = { dialInSummaryScreenOptions } />
+                        </>
+                }
+                <RootStack.Screen
+                    component = { ConnectingPage }
+                    name = { screen.connecting }
+                    options = {{
+                        gestureEnabled: false,
+                        headerShown: false
+                    }} />
+                <RootStack.Screen
+                    component = { ConferenceNavigationContainer }
+                    name = { screen.conference.root }
+                    options = {{
+                        gestureEnabled: false,
+                        headerShown: false
+                    }} />
+            </RootStack.Navigator>
+        </NavigationContainer>
     );
 };
 
@@ -89,4 +99,3 @@ function mapStateToProps(state: Object) {
 }
 
 export default connect(mapStateToProps)(RootNavigationContainer);
-

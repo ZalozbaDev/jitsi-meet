@@ -1,13 +1,9 @@
-// @flow
-
 import { TransitionPresets } from '@react-navigation/stack';
 import React from 'react';
-import { useTranslation } from 'react-i18next';
 import { Platform } from 'react-native';
 
 import {
     Icon,
-    IconClose,
     IconHelp,
     IconHome,
     IconInfo,
@@ -15,8 +11,9 @@ import {
 } from '../../base/icons';
 import BaseTheme from '../../base/ui/components/BaseTheme.native';
 
-import HeaderNavigationButton from './components/HeaderNavigationButton';
 import { goBack } from './components/conference/ConferenceNavigationContainerRef';
+import { goBack as goBackToLobbyScreen } from './components/lobby/LobbyNavigationContainerRef';
+import { screenHeaderCloseButton } from './functions';
 
 
 /**
@@ -24,7 +21,7 @@ import { goBack } from './components/conference/ConferenceNavigationContainerRef
  */
 export const navigationContainerTheme = {
     colors: {
-        background: BaseTheme.palette.ui12
+        background: BaseTheme.palette.uiBackground
     }
 };
 
@@ -47,21 +44,6 @@ export const fullScreenOptions = {
 
 
 /**
- * Dial-IN Info screen options and transition types.
- */
-export const dialInSummaryScreenOptions = {
-    ...TransitionPresets.ModalTransition,
-    gestureEnabled: true,
-    headerShown: true,
-    headerStyle: {
-        backgroundColor: BaseTheme.palette.screen01Header
-    },
-    headerTitleStyle: {
-        color: BaseTheme.palette.text01
-    }
-};
-
-/**
  * Drawer navigator screens options and transition types.
  */
 export const drawerNavigatorScreenOptions = {
@@ -79,7 +61,7 @@ export const drawerScreenOptions = {
     gestureEnabled: true,
     headerShown: true,
     headerStyle: {
-        backgroundColor: BaseTheme.palette.screen01Header
+        backgroundColor: BaseTheme.palette.screen02Header
     }
 };
 
@@ -111,9 +93,11 @@ export const welcomeScreenOptions = {
             size = { 20 }
             src = { IconHome } />
     ),
-    headerTitleStyle: {
-        color: BaseTheme.palette.screen01Header
-    }
+    headerStyle: {
+        backgroundColor: BaseTheme.palette.screen01Header
+    },
+    // eslint-disable-next-line no-empty-function
+    headerTitle: () => {}
 };
 
 /**
@@ -167,16 +151,7 @@ export const helpScreenOptions = {
 /**
  * Screen options for conference.
  */
-export const conferenceScreenOptions = {
-    ...fullScreenOptions
-};
-
-/**
- * Screen options for lobby modal.
- */
-export const lobbyScreenOptions = {
-    ...fullScreenOptions
-};
+export const conferenceScreenOptions = fullScreenOptions;
 
 /**
  * Tab bar options for chat screen.
@@ -198,26 +173,10 @@ export const chatTabBarOptions = {
 export const presentationScreenOptions = {
     ...conferenceModalPresentation,
     headerBackTitleVisible: false,
-    headerLeft: () => {
-        const { t } = useTranslation();
-
-        if (Platform.OS === 'ios') {
-            return (
-                <HeaderNavigationButton
-                    label = { t('dialog.close') }
-                    onPress = { goBack } />
-            );
-        }
-
-        return (
-            <HeaderNavigationButton
-                onPress = { goBack }
-                src = { IconClose } />
-        );
-    },
+    headerLeft: () => screenHeaderCloseButton(goBack),
     headerStatusBarHeight: 0,
     headerStyle: {
-        backgroundColor: BaseTheme.palette.screen01Header
+        backgroundColor: BaseTheme.palette.screen02Header
     },
     headerTitleStyle: {
         color: BaseTheme.palette.text01
@@ -225,52 +184,64 @@ export const presentationScreenOptions = {
 };
 
 /**
+ * Screen options for car mode.
+ */
+export const carmodeScreenOptions = presentationScreenOptions;
+
+/**
  * Screen options for chat.
  */
-export const chatScreenOptions = {
-    ...presentationScreenOptions
+export const chatScreenOptions = presentationScreenOptions;
+
+/**
+ * Dial-IN Info screen options and transition types.
+ */
+export const dialInSummaryScreenOptions = {
+    ...presentationScreenOptions,
+    headerLeft: undefined
 };
 
 /**
  * Screen options for invite modal.
  */
-export const inviteScreenOptions = {
-    ...presentationScreenOptions
-};
+export const inviteScreenOptions = presentationScreenOptions;
 
 /**
  * Screen options for participants modal.
  */
-export const participantsScreenOptions = {
-    ...presentationScreenOptions
-};
+export const participantsScreenOptions = presentationScreenOptions;
 
 /**
  * Screen options for speaker stats modal.
  */
-export const speakerStatsScreenOptions = {
-    ...presentationScreenOptions
-};
+export const speakerStatsScreenOptions = presentationScreenOptions;
 
 /**
  * Screen options for security options modal.
  */
-export const securityScreenOptions = {
-    ...presentationScreenOptions
-};
+export const securityScreenOptions = presentationScreenOptions;
 
 /**
  * Screen options for recording modal.
  */
-export const recordingScreenOptions = {
-    ...presentationScreenOptions
-};
+export const recordingScreenOptions = presentationScreenOptions;
 
 /**
  * Screen options for live stream modal.
  */
-export const liveStreamScreenOptions = {
-    ...presentationScreenOptions
+export const liveStreamScreenOptions = presentationScreenOptions;
+
+/**
+ * Screen options for lobby modal.
+ */
+export const lobbyScreenOptions = presentationScreenOptions;
+
+/**
+ * Screen options for lobby chat modal.
+ */
+export const lobbyChatScreenOptions = {
+    ...presentationScreenOptions,
+    headerLeft: () => screenHeaderCloseButton(goBackToLobbyScreen)
 };
 
 /**
@@ -291,7 +262,7 @@ export const sharedDocumentScreenOptions = {
     headerBackTitleVisible: false,
     headerShown: true,
     headerStyle: {
-        backgroundColor: BaseTheme.palette.screen01Header
+        backgroundColor: BaseTheme.palette.screen02Header
     },
     headerTitleStyle: {
         color: BaseTheme.palette.text01

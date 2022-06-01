@@ -46,6 +46,7 @@ const commands = {
     kickParticipant: 'kick-participant',
     muteEveryone: 'mute-everyone',
     overwriteConfig: 'overwrite-config',
+    overwriteNames: 'overwrite-names',
     password: 'password',
     pinParticipant: 'pin-participant',
     rejectParticipant: 'reject-participant',
@@ -59,6 +60,7 @@ const commands = {
     setLargeVideoParticipant: 'set-large-video-participant',
     setMediaEncryptionKey: 'set-media-encryption-key',
     setParticipantVolume: 'set-participant-volume',
+    setSubtitles: 'set-subtitles',
     setTileView: 'set-tile-view',
     setVideoQuality: 'set-video-quality',
     startRecording: 'start-recording',
@@ -79,6 +81,7 @@ const commands = {
     toggleRaiseHand: 'toggle-raise-hand',
     toggleShareAudio: 'toggle-share-audio',
     toggleShareScreen: 'toggle-share-screen',
+    toggleSubtitles: 'toggle-subtitles',
     toggleTileView: 'toggle-tile-view',
     toggleVirtualBackgroundDialog: 'toggle-virtual-background',
     toggleVideo: 'toggle-video'
@@ -92,6 +95,7 @@ const events = {
     'avatar-changed': 'avatarChanged',
     'audio-availability-changed': 'audioAvailabilityChanged',
     'audio-mute-status-changed': 'audioMuteStatusChanged',
+    'breakout-rooms-updated': 'breakoutRoomsUpdated',
     'browser-support': 'browserSupport',
     'camera-error': 'cameraError',
     'chat-updated': 'chatUpdated',
@@ -102,9 +106,11 @@ const events = {
     'email-change': 'emailChange',
     'error-occurred': 'errorOccurred',
     'endpoint-text-message-received': 'endpointTextMessageReceived',
+    'face-landmark-detected': 'faceLandmarkDetected',
     'feedback-submitted': 'feedbackSubmitted',
     'feedback-prompt-displayed': 'feedbackPromptDisplayed',
     'filmstrip-display-changed': 'filmstripDisplayChanged',
+    'iframe-dock-state-changed': 'iframeDockStateChanged',
     'incoming-message': 'incomingMessage',
     'knocking-participant': 'knockingParticipant',
     'log': 'log',
@@ -925,6 +931,18 @@ export default class JitsiMeetExternalAPI extends EventEmitter {
     }
 
     /**
+     * Returns the audio disabled status.
+     *
+     * @returns {Promise} - Resolves with the audio disabled status and rejects on
+     * failure.
+     */
+    isAudioDisabled() {
+        return this._transport.sendRequest({
+            name: 'is-audio-disabled'
+        });
+    }
+
+    /**
      * Returns the moderation on status on the given mediaType.
      *
      * @param {string} mediaType - The media type for which to check moderation.
@@ -974,6 +992,17 @@ export default class JitsiMeetExternalAPI extends EventEmitter {
     isSharingScreen() {
         return this._transport.sendRequest({
             name: 'is-sharing-screen'
+        });
+    }
+
+    /**
+     * Returns wether meeting is started silent.
+     *
+     * @returns {Promise} - Resolves with start silent status.
+     */
+    isStartSilent() {
+        return this._transport.sendRequest({
+            name: 'is-start-silent'
         });
     }
 

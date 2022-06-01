@@ -1,6 +1,11 @@
 
 /* eslint-disable no-unused-vars, no-var */
 
+/*
+ * NOTE: If you add a new option please remember to document it here:
+ * https://jitsi.github.io/handbook/docs/dev-guide/dev-guide-configuration
+ */
+
 var config = {
     // Connection
     //
@@ -69,6 +74,11 @@ var config = {
         // or disabled for the screenshare.
         // capScreenshareBitrate: 1 // 0 to disable - deprecated.
 
+        // Whether to use fake constraints (height: 99999, width: 99999) when calling getDisplayMedia on
+        // Chromium based browsers. This is intended as a workaround for
+        // https://bugs.chromium.org/p/chromium/issues/detail?id=1056311
+        // setScreenSharingResolutionConstraints: true
+
         // Enable callstats only for a percentage of users.
         // This takes a value between 0 and 100 which determines the probability for
         // the callstats to be enabled.
@@ -79,6 +89,10 @@ var config = {
     flags: {
         // Enables source names in the signaling.
         // sourceNameSignaling: false,
+
+        // Enables sending multiple video streams, i.e., camera and desktop tracks can be shared in the conference
+        // separately as two different streams instead of one composite stream.
+        // sendMultipleVideoStreams: false
     },
 
     // Disables moderator indicators.
@@ -545,6 +559,10 @@ var config = {
     //     // When 'true', it shows an intermediate page before joining, where the user can configure their devices.
     //     // This replaces `prejoinPageEnabled`.
     //     enabled: true,
+    //     // Hides the participant name editing field in the prejoin screen.
+    //     // If requireDisplayName is also set as true, a name should still be provided through
+    //     // either the jwt or the userInfo from the iframe api init object in order for this to have an effect.
+    //     hideDisplayName: false,
     //     // List of buttons to hide from the extra join options dropdown.
     //     hideExtraJoinButtons: ['no-audio', 'by-phone']
     // },
@@ -572,8 +590,17 @@ var config = {
     // Array with avatar URL prefixes that need to use CORS.
     // corsAvatarURLs: [ 'https://www.gravatar.com/avatar/' ],
 
-    // Base URL for a Gravatar-compatible service. Defaults to libravatar.
-    // gravatarBaseURL: 'https://seccdn.libravatar.org/avatar/',
+    // Base URL for a Gravatar-compatible service. Defaults to Gravatar.
+    // DEPRECATED! Use `gravatar.baseUrl` instead.
+    // gravatarBaseURL: 'https://www.gravatar.com/avatar/',
+
+    // Setup for Gravatar-compatible services.
+    // gravatar: {
+    //     // Defaults to Gravatar.
+    //     baseUrl: 'https://www.gravatar.com/avatar/',
+    //     // True if Gravatar should be disabled.
+    //     disabled: false
+    // },
 
     // App name to be displayed in the invitation email subject, as an alternative to
     // interfaceConfig.APP_NAME.
@@ -595,6 +622,7 @@ var config = {
     //    'chat',
     //    'closedcaptions',
     //    'desktop',
+    //    'dock-iframe'
     //    'download',
     //    'embedmeeting',
     //    'etherpad',
@@ -608,8 +636,6 @@ var config = {
     //    'linktosalesforce',
     //    'livestreaming',
     //    'microphone',
-    //    'mute-everyone',
-    //    'mute-video-everyone',
     //    'participants-pane',
     //    'profile',
     //    'raisehand',
@@ -623,6 +649,7 @@ var config = {
     //    'stats',
     //    'tileview',
     //    'toggle-camera',
+    //    'undock-iframe',
     //    'videoquality',
     //    '__end'
     // ],
@@ -748,18 +775,18 @@ var config = {
     // Enables sending participants' emails (if available) to callstats and other analytics
     // enableEmailInStats: false,
 
-    // Enables detecting faces of participants and get their expression and send it to other participants
-    // enableFacialRecognition: true,
-
-    // Enables displaying facial expressions in speaker stats
-    // enableDisplayFacialExpressions: true,
-
-    // faceCoordinatesSharing: {
+    // faceLandmarks: {
     //     // Enables sharing your face cordinates. Used for centering faces within a video.
-    //     enabled: false,
+    //     enableFaceCentering: false,
 
-    //     // Minimum required face movement percentage threshold for sending new face coordinates data.
-    //     threshold: 10,
+    //     // Enables detecting face expressions and sharing data with other participants
+    //     enableFaceExpressionsDetection: false,
+
+    //     // Enables displaying face expressions in speaker stats
+    //     enableDisplayFaceExpressions: false,
+
+    //     // Minimum required face movement percentage threshold for sending new face centering coordinates data.
+    //     faceCenteringThreshold: 10,
 
     //     // Miliseconds for processing a new image capture in order to detect face coordinates if they exist.
     //     captureInterval: 100
@@ -988,7 +1015,8 @@ var config = {
     // Disables all invite functions from the app (share, invite, dial out...etc)
     // disableInviteFunctions: true,
 
-    // Disables storing the room name to the recents list
+    // Disables storing the room name to the recents list. When in an iframe this is ignored and
+    // the room is never stored in the recents list.
     // doNotStoreRoom: true,
 
     // Deployment specific URLs.
@@ -1085,10 +1113,22 @@ var config = {
     */
     // dynamicBrandingUrl: '',
 
+    // Options related to the participants pane.
+    // participantsPane: {
+    //     // Hides the moderator settings tab.
+    //     hideModeratorSettingsTab: false,
+    //     // Hides the more actions button.
+    //     hideMoreActionsButton: false,
+    //     // Hides the mute all button.
+    //     hideMuteAllButton: false
+    // },
+
     // Options related to the breakout rooms feature.
     // breakoutRooms: {
     //     // Hides the add breakout room button. This replaces `hideAddRoomButton`.
     //     hideAddRoomButton: false,
+    //     // Hides the auto assign participants button.
+    //     hideAutoAssignButton: false,
     //     // Hides the join breakout room button.
     //     hideJoinRoomButton: false
     // },
@@ -1119,7 +1159,7 @@ var config = {
     // If a label's id is not in any of the 2 arrays, it will not be visible at all on the header.
     // conferenceInfo: {
     //     // those labels will not be hidden in tandem with the toolbox.
-    //     alwaysVisible: ['recording', 'local-recording', 'raised-hands-count'],
+    //     alwaysVisible: ['recording', 'raised-hands-count'],
     //     // those labels will be auto-hidden in tandem with the toolbox buttons.
     //     autoHide: [
     //         'subject',
@@ -1163,14 +1203,24 @@ var config = {
     // will open an etherpad document.
     // etherpad_base: 'https://your-etherpad-installati.on/p/',
 
+    // To enable information about dial-in access to meetings you need to provide
+    // dialInNumbersUrl and dialInConfCodeUrl.
+    // dialInNumbersUrl returns a json array of numbers that can be used for dial-in.
+    // {"countryCode":"US","tollFree":false,"formattedNumber":"+1 123-456-7890"}
+    // dialInConfCodeUrl is the conference mapper converting a meeting id to a PIN used for dial-in
+    // or the other way around (more info in resources/cloud-api.swagger)
+    //
+    // For JaaS customers the default values are:
+    // dialInNumbersUrl: 'https://conference-mapper.jitsi.net/v1/access/dids',
+    // dialInConfCodeUrl: 'https://conference-mapper.jitsi.net/v1/access',
+    //
+
     // List of undocumented settings used in jitsi-meet
     /**
      _immediateReloadThreshold
      debug
      debugAudioLevels
      deploymentInfo
-     dialInConfCodeUrl
-     dialInNumbersUrl
      dialOutAuthUrl
      dialOutCodesUrl
      disableRemoteControl
@@ -1300,6 +1350,9 @@ var config = {
     //     'toolbar.talkWhileMutedPopup', // shown when user tries to speak while muted
     //     'transcribing.failedToStart' // shown when transcribing fails to start
     // ],
+
+    // List of notifications to be disabled. Works in tandem with the above setting.
+    // disabledNotifications: [],
 
     // Prevent the filmstrip from autohiding when screen width is under a certain threshold
     // disableFilmstripAutohiding: false,

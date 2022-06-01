@@ -12,16 +12,15 @@ import {
     createToolbarEvent,
     sendAnalytics
 } from '../../../analytics';
-import { getToolbarButtons } from '../../../base/config';
+import { getSourceNameSignalingFeatureFlag, getToolbarButtons } from '../../../base/config';
 import { isMobileBrowser } from '../../../base/environment/utils';
 import { translate } from '../../../base/i18n';
 import { Icon, IconMenuDown, IconMenuUp } from '../../../base/icons';
 import { connect } from '../../../base/redux';
 import { shouldHideSelfView } from '../../../base/settings/functions.any';
-import { CHAT_SIZE } from '../../../chat';
 import { showToolbox } from '../../../toolbox/actions.web';
 import { isButtonEnabled, isToolboxVisible } from '../../../toolbox/functions.web';
-import { LAYOUTS } from '../../../video-layout';
+import { getCurrentLayout, LAYOUTS } from '../../../video-layout';
 import {
     setFilmstripVisible,
     setVisibleRemoteParticipants,
@@ -57,11 +56,6 @@ type Props = {
      * Additional CSS class names top add to the root.
      */
     _className: string,
-
-    /**
-     * Whether or not the chat is open.
-     */
-    _chatOpen: boolean,
 
     /**
      * The current layout of the filmstrip.
@@ -112,6 +106,11 @@ type Props = {
      * Whether or not the current layout is vertical filmstrip.
      */
     _isVerticalFilmstrip: boolean,
+
+    /**
+     * The local screen share participant. This prop is behind the sourceNameSignaling feature flag.
+     */
+    _localScreenShare: Object,
 
     /**
      * The maximum width of the vertical filmstrip.
@@ -305,9 +304,9 @@ class Filmstrip extends PureComponent <Props, State> {
     render() {
         const filmstripStyle = { };
         const {
-            _chatOpen,
             _currentLayout,
             _disableSelfView,
+            _localScreenShare,
             _resizableFilmstrip,
             _stageFilmstrip,
             _visible,
@@ -319,32 +318,29 @@ class Filmstrip extends PureComponent <Props, State> {
         const { isMouseDown } = this.state;
         const tileViewActive = _currentLayout === LAYOUTS.TILE_VIEW;
 
-        switch (_currentLayout) {
-        case LAYOUTS.VERTICAL_FILMSTRIP_VIEW: {
+        if (_currentLayout === LAYOUTS.STAGE_FILMSTRIP_VIEW && _stageFilmstrip) {
+            if (_visible) {
+                filmstripStyle.maxWidth = `calc(100% - ${_verticalViewMaxWidth}px)`;
+            }
+        } else if (_currentLayout === LAYOUTS.VERTICAL_FILMSTRIP_VIEW
+            || (_currentLayout === LAYOUTS.STAGE_FILMSTRIP_VIEW && !_stageFilmstrip)) {
             filmstripStyle.maxWidth = _verticalViewMaxWidth;
             if (!_visible) {
                 filmstripStyle.right = `-${filmstripStyle.maxWidth}px`;
             }
-            break;
-        }
-        case LAYOUTS.TILE_VIEW: {
-            if (_stageFilmstrip && _visible) {
-                filmstripStyle.maxWidth = `calc(100% - ${_verticalViewMaxWidth}px - ${_chatOpen ? CHAT_SIZE : 0}px)`;
-            }
-            break;
-        }
         }
 
         let toolbar = null;
 
-        if (!this.props._iAmRecorder && this.props._isFilmstripButtonEnabled && _currentLayout !== LAYOUTS.TILE_VIEW) {
+        if (!this.props._iAmRecorder && this.props._isFilmstripButtonEnabled
+            && _currentLayout !== LAYOUTS.TILE_VIEW && !_stageFilmstrip) {
             toolbar = this._renderToggleButton();
         }
 
         const filmstrip = (<>
             <div
                 className = { clsx(this.props._videosClassName,
-                    !tileViewActive && !_resizableFilmstrip && 'filmstrip-hover',
+                    !tileViewActive && !_stageFilmstrip && !_resizableFilmstrip && 'filmstrip-hover',
                     _verticalViewGrid && 'vertical-view-grid') }
                 id = 'remoteVideos'>
                 {!_disableSelfView && !_verticalViewGrid && (
@@ -352,11 +348,25 @@ class Filmstrip extends PureComponent <Props, State> {
                         className = 'filmstrip__videos'
                         id = 'filmstripLocalVideo'>
                         {
-                            !tileViewActive && <div id = 'filmstripLocalVideoThumbnail'>
+                            !tileViewActive && !_stageFilmstrip && <div id = 'filmstripLocalVideoThumbnail'>
                                 <Thumbnail
                                     key = 'local' />
                             </div>
                         }
+                    </div>
+                )}
+                {_localScreenShare && !_disableSelfView && !_verticalViewGrid && (
+                    <div
+                        className = 'filmstrip__videos'
+                        id = 'filmstripLocalScreenShare'>
+                        <div id = 'filmstripLocalScreenShareThumbnail'>
+                            {
+                                !tileViewActive && !_stageFilmstrip && <Thumbnail
+                                    key = 'localScreenShare'
+                                    participantID = { _localScreenShare.id } />
+
+                            }
+                        </div>
                     </div>
                 )}
                 {
@@ -591,6 +601,7 @@ class Filmstrip extends PureComponent <Props, State> {
             _filmstripHeight,
             _filmstripWidth,
             _hasScroll,
+            _isVerticalFilmstrip,
             _remoteParticipantsLength,
             _resizableFilmstrip,
             _rows,
@@ -606,7 +617,7 @@ class Filmstrip extends PureComponent <Props, State> {
             return null;
         }
 
-        if (_currentLayout === LAYOUTS.TILE_VIEW || _verticalViewGrid) {
+        if (_currentLayout === LAYOUTS.TILE_VIEW || _verticalViewGrid || _stageFilmstrip) {
             return (
                 <FixedSizeGrid
                     className = 'filmstrip__videos remote-videos'
@@ -656,7 +667,7 @@ class Filmstrip extends PureComponent <Props, State> {
                 props.className += ' is-not-overflowing';
             }
 
-        } else if (_currentLayout === LAYOUTS.VERTICAL_FILMSTRIP_VIEW) {
+        } else if (_isVerticalFilmstrip) {
             const itemSize = _thumbnailHeight + TILE_VERTICAL_MARGIN;
             const isNotOverflowing = !_hasScroll;
 
@@ -789,6 +800,7 @@ function _mapStateToProps(state, ownProps) {
     const { testing = {}, iAmRecorder } = state['features/base/config'];
     const enableThumbnailReordering = testing.enableThumbnailReordering ?? true;
     const { visible, width: verticalFilmstripWidth } = state['features/filmstrip'];
+    const { localScreenShare } = state['features/base/participants'];
     const reduceHeight = state['features/toolbox'].visible && toolbarButtons.length;
     const remoteVideosVisible = shouldRemoteVideosBeVisible(state);
     const { isOpen: shiftRight } = state['features/chat'];
@@ -806,15 +818,21 @@ function _mapStateToProps(state, ownProps) {
         shouldReduceHeight ? 'reduce-height' : ''
     } ${shiftRight ? 'shift-right' : ''} ${collapseTileView ? 'collapse' : ''} ${visible ? '' : 'hidden'}`.trim();
 
+    const _currentLayout = getCurrentLayout(state);
+    const _isVerticalFilmstrip = _currentLayout === LAYOUTS.VERTICAL_FILMSTRIP_VIEW
+        || (!ownProps._stageFilmstrip && _currentLayout === LAYOUTS.STAGE_FILMSTRIP_VIEW);
+
     return {
         _className: className,
         _chatOpen: state['features/chat'].isOpen,
+        _currentLayout,
         _disableSelfView: disableSelfView,
         _hasScroll,
         _iAmRecorder: Boolean(iAmRecorder),
         _isFilmstripButtonEnabled: isButtonEnabled('filmstrip', state),
         _isToolboxVisible: isToolboxVisible(state),
-        _isVerticalFilmstrip: ownProps._currentLayout === LAYOUTS.VERTICAL_FILMSTRIP_VIEW,
+        _isVerticalFilmstrip,
+        _localScreenShare: getSourceNameSignalingFeatureFlag(state) && localScreenShare,
         _maxFilmstripWidth: clientWidth - MIN_STAGE_VIEW_WIDTH,
         _thumbnailsReordered: enableThumbnailReordering,
         _verticalFilmstripWidth: verticalFilmstripWidth.current,
