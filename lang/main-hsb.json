@@ -295,7 +295,7 @@
         "muteParticipantsVideoDialogModerationOn": "Kameru wobdźělnika woprawdźe hasnyć? Njemóžeće to wjace změnić, jenož wobdźělnik sam.",
         "muteParticipantsVideoButton": "Kameru hasnyć",
         "muteParticipantsVideoTitle": "Kameru tuteje wosoby hasnyć.",
-        "muteParticipantsVideoBody": "Njemóžeće kameru wjac aktiwěrować, jenož wobdźělnik sam.",",
+        "muteParticipantsVideoBody": "Njemóžeće kameru wjac aktiwěrować, jenož wobdźělnik sam.",
         "muteParticipantsVideoBodyModerationOn": "Njemóžeće kameru wjac aktiwěrować, jenož wobdźělnik sam.",
         "noDropboxToken": "žadyn płačiwy dropbox-token",
         "Ok": "ok",
@@ -665,7 +665,7 @@
             "stopVideo": "kameru hasnyć",
             "unblockEveryoneMicCamera": "kameru a mikrofon wšěch wočinić",
             "videoModeration": "kameru zaspinyć",
-            "moreModerationControls": "dalše opcije moderatora/moderatorki",
+            "moreModerationControls": "dalše opcije moderatora/moderatorki"
         },
         "search": "přitomnych pytać"
     },
