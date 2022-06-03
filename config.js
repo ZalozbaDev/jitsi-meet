@@ -170,7 +170,7 @@ var config = {
     // startAudioOnly: false,
 
     // Every participant after the Nth will start audio muted.
-    // startAudioMuted: 10,
+    startAudioMuted: 4,
 
     // Start calls with audio muted. Unlike the option above, this one is only
     // applied locally. FIXME: having these 2 options is confusing.
@@ -234,7 +234,7 @@ var config = {
     // (no longer sent) until they are requested again. This is enabled by default. This must be enabled for screen
     // sharing to work as expected on Chrome. Disabling this might result in low resolution screenshare being sent
     // by the client.
-    // enableLayerSuspension: false,
+    enableLayerSuspension: true,
 
     // Every participant after the Nth will start video muted.
     // startVideoMuted: 10,
@@ -317,7 +317,7 @@ var config = {
     // Misc
 
     // Default value for the channel "last N" attribute. -1 for unlimited.
-    channelLastN: -1,
+    channelLastN: 4,
 
     // Connection indicators
     // connectionIndicators: {
