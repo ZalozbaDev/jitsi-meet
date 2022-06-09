@@ -40,9 +40,6 @@
     "audioOnly": {
         "audioOnly": "Geringe Bandbreite"
     },
-    "blankPage": {
-        "meetingEnded": "Konferenz beendet."
-    },
     "breakoutRooms": {
         "actions": {
             "add": "Breakout-Raum hinzufügen",
@@ -79,6 +76,17 @@
         "permissionMessage": "Die App benötigt Zugriff auf den Kalender, um Termine und Konferenzen anzuzeigen.",
         "refresh": "Kalender aktualisieren",
         "today": "Heute"
+    },
+    "carmode": {
+        "actions": {
+            "leaveMeeting": "",
+            "selectSoundDevice": ""
+        },
+        "labels": {
+            "buttonLabel": "",
+            "title": "",
+            "videoStopped": ""
+        }
     },
     "chat": {
         "enter": "Chat-Raum betreten",
@@ -649,6 +657,8 @@
         "linkToSalesforceKey": "Konferenz verlinken",
         "linkToSalesforceProgress": "Konferenz wird mit Salesforce verlinkt...",
         "linkToSalesforceSuccess": "Die Konferenz wurde mit Salesforce verlinkt",
+        "localRecordingStarted": "",
+        "localRecordingStopped": "",
         "me": "Ich",
         "moderationInEffectCSDescription": "Bitte melden um ein Video zu teilen",
         "moderationInEffectCSTitle": "Die Videofreigabe ist von der Moderation gesperrt",
@@ -879,6 +889,7 @@
         "limitNotificationDescriptionWeb": "Wegen hoher Nachfrage ist Ihre Aufnahme auf {{limit}} Min. begrenzt. Für unlimitierte Aufnahmen nutzen Sie bitte <a href={{url}} rel='noopener noreferrer' target='_blank'>{{app}}</a>.",
         "linkGenerated": "Link zur Aufzeichnung wurde generiert.",
         "live": "LIVE",
+        "localRecordingWarning": "",
         "loggedIn": "Als {{userName}} angemeldet",
         "off": "Aufnahme gestoppt",
         "offBy": "{{name}} stoppte die Aufnahme",
@@ -886,6 +897,7 @@
         "onBy": "{{name}} startete die Aufnahme",
         "pending": "Aufzeichnung des Meetings wird vorbereitet…",
         "rec": "AUFZ",
+        "saveLocalRecording": "",
         "serviceDescription": "Ihre Aufzeichnung wird vom Aufzeichnungsdienst gespeichert",
         "serviceDescriptionCloud": "Cloud-Aufzeichnung",
         "serviceDescriptionCloudInfo": "Aufzeichnungen werden 24 Stunden nach Aufzeichnungsende automatisch gelöscht.",
@@ -893,10 +905,12 @@
         "sessionAlreadyActive": "Diese Konferenz wird bereits aufgezeichnet.",
         "signIn": "Anmelden",
         "signOut": "Abmelden",
+        "surfaceError": "",
         "unavailable": "Oh! Der {{serviceName}} ist aktuell nicht verfügbar. Wir arbeiten an der Behebung des Problems. Bitte versuchen Sie es später noch einmal.",
         "unavailableTitle": "Aufnahme nicht verfügbar",
         "uploadToCloud": "In die Cloud hochladen"
     },
+    "screenshareDisplayName": "",
     "sectionList": {
         "pullToRefresh": "Ziehen, um zu aktualisieren"
     },
@@ -1012,10 +1026,12 @@
             "boo": "Buhen",
             "breakoutRoom": "Breakout-Räume betreten/verlassen",
             "callQuality": "Qualitätseinstellungen",
+            "carmode": "",
             "cc": "Untertitel ein-/ausschalten",
             "chat": "Chatfenster öffnen / schließen",
             "clap": "Klatschen",
             "collapse": "Einklappen",
+            "dock": "",
             "document": "Geteiltes Dokument schließen",
             "download": "Unsere Apps herunterladen",
             "embedMeeting": "Konferenz einbetten",
@@ -1066,6 +1082,7 @@
             "tileView": "Kachelansicht ein-/ausschalten",
             "toggleCamera": "Kamera wechseln",
             "toggleFilmstrip": "Miniaturansichten ein-/ausschalten",
+            "undock": "",
             "videoblur": "Unscharfer Hintergrund ein-/ausschalten",
             "videomute": "„Video stummschalten“ ein-/ausschalten"
         },
@@ -1082,6 +1099,7 @@
         "closeChat": "Chat schließen",
         "closeReactionsMenu": "Interaktionsmenü schließen",
         "disableReactionSounds": "Sie können die Interaktionstöne für diese Konferenz deaktivieren",
+        "dock": "",
         "documentClose": "Geteiltes Dokument schließen",
         "documentOpen": "Geteiltes Dokument öffnen",
         "download": "Unsere Apps herunterladen",
@@ -1150,6 +1168,7 @@
         "talkWhileMutedPopup": "Versuchen Sie zu sprechen? Ihr Mikrofon ist stummgeschaltet.",
         "tileViewToggle": "Kachelansicht ein-/ausschalten",
         "toggleCamera": "Kamera wechseln",
+        "undock": "",
         "videoSettings": "Kameraeinstellungen",
         "videomute": "Kamera starten / stoppen"
     },
