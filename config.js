@@ -295,6 +295,9 @@ var config = {
     // Whether to enable live streaming or not.
     // liveStreamingEnabled: false,
 
+    // Whether to enable local recording or not.
+    // enableLocalRecording: false,
+
     // Transcription (in interface_config,
     // subtitles and buttons can be configured)
     // transcribingEnabled: false,
@@ -776,7 +779,7 @@ var config = {
     // enableEmailInStats: false,
 
     // faceLandmarks: {
-    //     // Enables sharing your face cordinates. Used for centering faces within a video.
+    //     // Enables sharing your face coordinates. Used for centering faces within a video.
     //     enableFaceCentering: false,
 
     //     // Enables detecting face expressions and sharing data with other participants
@@ -788,8 +791,11 @@ var config = {
     //     // Minimum required face movement percentage threshold for sending new face centering coordinates data.
     //     faceCenteringThreshold: 10,
 
-    //     // Miliseconds for processing a new image capture in order to detect face coordinates if they exist.
-    //     captureInterval: 100
+    //     // Milliseconds for processing a new image capture in order to detect face coordinates if they exist.
+    //     captureInterval: 1000,
+
+    //     // Maximum number of faces that can be detected from a video track.
+    //     maxFacesDetected: 4
     // },
 
     // Controls the percentage of automatic feedback shown to participants when callstats is enabled.
@@ -953,23 +959,6 @@ var config = {
     //     ]
     // },
 
-    // Local Recording
-    //
-
-    // localRecording: {
-    // Enables local recording.
-    // Additionally, 'localrecording' (all lowercase) needs to be added to
-    // the `toolbarButtons`-array for the Local Recording button to show up
-    // on the toolbar.
-    //
-    //     enabled: true,
-    //
-
-    // The recording format, can be one of 'ogg', 'flac' or 'wav'.
-    //     format: 'flac'
-    //
-
-    // },
     // e2ee: {
     //   labels,
     //   externallyManagedKey: false
@@ -1305,7 +1294,6 @@ var config = {
     //     'liveStreaming.unavailableTitle', // shown when livestreaming service is not reachable
     //     'lobby.joinRejectedMessage', // shown when while in a lobby, user's request to join is rejected
     //     'lobby.notificationTitle', // shown when lobby is toggled and when join requests are allowed / denied
-    //     'localRecording.localRecording', // shown when a local recording is started
     //     'notify.chatMessages', // shown when receiving chat messages while the chat window is closed
     //     'notify.disconnected', // shown when a participant has left
     //     'notify.connectedOneMember', // show when a participant joined
