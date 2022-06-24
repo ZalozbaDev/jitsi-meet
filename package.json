@@ -54,7 +54,7 @@
     "@react-navigation/elements": "1.2.1",
     "@react-navigation/material-top-tabs": "6.0.6",
     "@react-navigation/native": "6.0.6",
-    "@react-navigation/stack": "6.0.11",
+    "@react-navigation/native-stack": "6.6.2",
     "@svgr/webpack": "4.3.2",
     "@tensorflow/tfjs-backend-wasm": "3.13.0",
     "@tensorflow/tfjs-core": "3.13.0",
@@ -77,8 +77,9 @@
     "jquery": "3.5.1",
     "jquery-i18next": "1.2.1",
     "js-md5": "0.6.1",
+    "js-sha512": "0.8.0",
     "jwt-decode": "2.2.0",
-    "lib-jitsi-meet": "https://github.com/jitsi/lib-jitsi-meet/releases/download/v1448.0.0+3df2abec/lib-jitsi-meet.tgz",
+    "lib-jitsi-meet": "https://github.com/jitsi/lib-jitsi-meet/releases/download/v1457.0.0+ad75454f/lib-jitsi-meet.tgz",
     "lodash": "4.17.21",
     "moment": "2.29.2",
     "moment-duration-format": "2.2.2",
@@ -98,7 +99,7 @@
     "react-native-collapsible": "1.6.0",
     "react-native-default-preference": "1.4.4",
     "react-native-device-info": "8.4.8",
-    "react-native-dialog": "9.2.1",
+    "react-native-dialog": "https://github.com/jitsi/react-native-dialog/releases/download/v9.2.2-jitsi.1/react-native-dialog-9.2.2.tgz",
     "react-native-gesture-handler": "2.1.0",
     "react-native-get-random-values": "1.7.2",
     "react-native-immersive": "2.0.0",
@@ -146,7 +147,9 @@
     "@babel/preset-react": "7.16.0",
     "@babel/runtime": "7.16.0",
     "@jitsi/eslint-config": "4.0.0",
+    "@types/react": "17.0.14",
     "@types/react-native": "0.67.6",
+    "@types/react-redux": "7.1.24",
     "@types/uuid": "8.3.4",
     "babel-loader": "8.2.3",
     "babel-plugin-optional-require": "0.3.1",
@@ -189,5 +192,9 @@
     "postinstall": "patch-package --error-on-fail && jetify",
     "validate": "npm ls",
     "start": "make dev"
+  },
+  "resolutions": {
+    "@types/react": "17.0.14",
+    "@types/react-dom": "17.0.14"
   }
 }

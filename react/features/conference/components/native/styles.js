@@ -1,4 +1,3 @@
-import { ColorSchemeRegistry, schemeColor } from '../../../base/color-scheme';
 import { fixAndroidViewClipping } from '../../../base/styles';
 import BaseTheme from '../../../base/ui/components/BaseTheme.native';
 
@@ -36,10 +35,6 @@ export default {
         margin: 10
     },
 
-    headerNavigationIcon: {
-        marginLeft: 14
-    },
-
     headerNavigationButton: {
         height: BaseTheme.spacing[6],
         marginTop: 20,
@@ -48,15 +43,13 @@ export default {
 
     headerNavigationText: {
         color: BaseTheme.palette.text01,
-        fontSize: HEADER_ACTION_BUTTON_SIZE,
-        marginHorizontal: BaseTheme.spacing[3]
+        fontSize: HEADER_ACTION_BUTTON_SIZE
     },
 
     headerNavigationTextBold: {
         ...BaseTheme.typography.labelButton,
         color: BaseTheme.palette.text01,
-        fontSize: HEADER_ACTION_BUTTON_SIZE,
-        marginHorizontal: BaseTheme.spacing[3]
+        fontSize: HEADER_ACTION_BUTTON_SIZE
     },
 
     /**
@@ -87,6 +80,7 @@ export default {
 
     lonelyButton: {
         alignItems: 'center',
+        backgroundColor: BaseTheme.palette.action01,
         borderRadius: 24,
         flexDirection: 'row',
         height: BaseTheme.spacing[6],
@@ -95,6 +89,7 @@ export default {
     },
 
     lonelyButtonComponents: {
+        color: BaseTheme.palette.text01,
         marginHorizontal: 6
     },
 
@@ -105,6 +100,7 @@ export default {
     },
 
     lonelyMessage: {
+        color: BaseTheme.palette.text01,
         paddingVertical: BaseTheme.spacing[2]
     },
 
@@ -236,13 +232,3 @@ export default {
         paddingLeft: BaseTheme.spacing[2]
     }
 };
-
-ColorSchemeRegistry.register('Conference', {
-    lonelyButton: {
-        backgroundColor: schemeColor('inviteButtonBackground')
-    },
-
-    lonelyMessage: {
-        color: schemeColor('onVideoText')
-    }
-});

@@ -1,4 +1,3 @@
-import { TransitionPresets } from '@react-navigation/stack';
 import React from 'react';
 import { Platform } from 'react-native';
 
@@ -13,7 +12,8 @@ import BaseTheme from '../../base/ui/components/BaseTheme.native';
 
 import { goBack } from './components/conference/ConferenceNavigationContainerRef';
 import { goBack as goBackToLobbyScreen } from './components/lobby/LobbyNavigationContainerRef';
-import { screenHeaderCloseButton } from './functions';
+import { lobbyScreenHeaderCloseButton, screenHeaderCloseButton } from './functions';
+import { goBack as goBackToWelcomeScreen } from './rootNavigationContainerRef';
 
 
 /**
@@ -26,28 +26,10 @@ export const navigationContainerTheme = {
 };
 
 /**
- * Default modal transition for the current platform.
- */
-export const conferenceModalPresentation = Platform.select({
-    ios: TransitionPresets.ModalPresentationIOS,
-    default: TransitionPresets.DefaultTransition
-});
-
-/**
- * Screen options and transition types.
- */
-export const fullScreenOptions = {
-    ...TransitionPresets.ModalTransition,
-    gestureEnabled: false,
-    headerShown: false
-};
-
-
-/**
  * Drawer navigator screens options and transition types.
  */
 export const drawerNavigatorScreenOptions = {
-    ...TransitionPresets.ModalTransition,
+    animation: 'default',
     gestureEnabled: true,
     headerShown: false
 };
@@ -57,12 +39,16 @@ export const drawerNavigatorScreenOptions = {
  * Drawer screen options and transition types.
  */
 export const drawerScreenOptions = {
-    ...TransitionPresets.ModalTransition,
+    animation: 'default',
     gestureEnabled: true,
     headerShown: true,
     headerStyle: {
         backgroundColor: BaseTheme.palette.screen02Header
-    }
+    },
+    orientation: Platform.select({
+        ios: 'default',
+        android: 'all'
+    })
 };
 
 /**
@@ -96,8 +82,9 @@ export const welcomeScreenOptions = {
     headerStyle: {
         backgroundColor: BaseTheme.palette.screen01Header
     },
-    // eslint-disable-next-line no-empty-function
-    headerTitle: () => {}
+    headerTitleStyle: {
+        color: BaseTheme.palette.text01
+    }
 };
 
 /**
@@ -151,7 +138,15 @@ export const helpScreenOptions = {
 /**
  * Screen options for conference.
  */
-export const conferenceScreenOptions = fullScreenOptions;
+export const conferenceScreenOptions = {
+    animation: 'default',
+    gestureEnabled: false,
+    headerShown: false,
+    orientation: Platform.select({
+        ios: 'default',
+        android: 'all'
+    })
+};
 
 /**
  * Tab bar options for chat screen.
@@ -171,7 +166,6 @@ export const chatTabBarOptions = {
  * Screen options for presentation type modals.
  */
 export const presentationScreenOptions = {
-    ...conferenceModalPresentation,
     headerBackTitleVisible: false,
     headerLeft: () => screenHeaderCloseButton(goBack),
     headerStatusBarHeight: 0,
@@ -180,13 +174,20 @@ export const presentationScreenOptions = {
     },
     headerTitleStyle: {
         color: BaseTheme.palette.text01
-    }
+    },
+    orientation: Platform.select({
+        ios: 'default',
+        android: 'all'
+    })
 };
 
 /**
  * Screen options for car mode.
  */
-export const carmodeScreenOptions = presentationScreenOptions;
+export const carmodeScreenOptions = {
+    ...presentationScreenOptions,
+    orientation: 'portrait'
+};
 
 /**
  * Screen options for chat.
@@ -198,7 +199,8 @@ export const chatScreenOptions = presentationScreenOptions;
  */
 export const dialInSummaryScreenOptions = {
     ...presentationScreenOptions,
-    headerLeft: undefined
+    animation: 'slide_from_bottom',
+    headerLeft: () => screenHeaderCloseButton(goBackToWelcomeScreen)
 };
 
 /**
@@ -234,7 +236,10 @@ export const liveStreamScreenOptions = presentationScreenOptions;
 /**
  * Screen options for lobby modal.
  */
-export const lobbyScreenOptions = presentationScreenOptions;
+export const lobbyScreenOptions = {
+    ...presentationScreenOptions,
+    headerLeft: () => lobbyScreenHeaderCloseButton()
+};
 
 /**
  * Screen options for lobby chat modal.
@@ -258,7 +263,7 @@ export const gifsMenuOptions = presentationScreenOptions;
  * Screen options for shared document.
  */
 export const sharedDocumentScreenOptions = {
-    ...TransitionPresets.DefaultTransition,
+    animation: 'slide_from_right',
     headerBackTitleVisible: false,
     headerShown: true,
     headerStyle: {
@@ -266,5 +271,44 @@ export const sharedDocumentScreenOptions = {
     },
     headerTitleStyle: {
         color: BaseTheme.palette.text01
-    }
+    },
+    orientation: Platform.select({
+        ios: 'default',
+        android: 'all'
+    })
+};
+
+/**
+ * Screen options for connecting screen.
+ */
+export const connectingScreenOptions = {
+    gestureEnabled: false,
+    headerShown: false
+};
+
+/**
+ * Screen options for pre-join screen.
+ */
+export const preJoinScreenOptions = {
+    gestureEnabled: false,
+    headerStyle: {
+        backgroundColor: BaseTheme.palette.screen02Header
+    },
+    headerTitle: ''
+};
+
+/**
+ * Screen options for conference navigation container screen.
+ */
+export const conferenceNavigationContainerScreenOptions = {
+    gestureEnabled: false,
+    headerShown: false
+};
+
+/**
+ * Screen options for lobby navigation container screen.
+ */
+export const lobbyNavigationContainerScreenOptions = {
+    gestureEnabled: false,
+    headerShown: false
 };

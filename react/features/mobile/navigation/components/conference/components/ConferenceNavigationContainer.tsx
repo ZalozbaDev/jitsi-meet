@@ -1,5 +1,5 @@
 import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
@@ -31,6 +31,7 @@ import {
     gifsMenuOptions,
     inviteScreenOptions,
     liveStreamScreenOptions,
+    lobbyNavigationContainerScreenOptions,
     navigationContainerTheme,
     participantsScreenOptions,
     recordingScreenOptions,
@@ -45,7 +46,7 @@ import {
     conferenceNavigationRef
 } from '../ConferenceNavigationContainerRef';
 
-const ConferenceStack = createStackNavigator();
+const ConferenceStack = createNativeStackNavigator();
 
 const ConferenceNavigationContainer = () => {
     const isPollsDisabled = useSelector(getDisablePolls);
@@ -101,15 +102,11 @@ const ConferenceNavigationContainer = () => {
                 <ConferenceStack.Screen
                     component = { StartRecordingDialog }
                     name = { screen.conference.recording }
-                    options = {{
-                        ...recordingScreenOptions
-                    }} />
+                    options = { recordingScreenOptions } />
                 <ConferenceStack.Screen
                     component = { StartLiveStreamDialog }
                     name = { screen.conference.liveStream }
-                    options = {{
-                        ...liveStreamScreenOptions
-                    }} />
+                    options = { liveStreamScreenOptions } />
                 <ConferenceStack.Screen
                     component = { SpeakerStats }
                     name = { screen.conference.speakerStats }
@@ -134,10 +131,7 @@ const ConferenceNavigationContainer = () => {
                 <ConferenceStack.Screen
                     component = { LobbyNavigationContainer }
                     name = { screen.lobby.root }
-                    options = {{
-                        gestureEnabled: false,
-                        headerShown: false
-                    }} />
+                    options = { lobbyNavigationContainerScreenOptions } />
                 <ConferenceStack.Screen
                     component = { AddPeopleDialog }
                     name = { screen.conference.invite }
@@ -158,7 +152,7 @@ const ConferenceNavigationContainer = () => {
                     options = {{
                         ...carmodeScreenOptions,
                         title: t('carmode.labels.title')
-                    }}/>
+                    }} />
             </ConferenceStack.Navigator>
         </NavigationContainer>
     );

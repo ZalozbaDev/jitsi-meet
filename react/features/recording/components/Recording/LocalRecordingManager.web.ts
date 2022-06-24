@@ -7,6 +7,7 @@ import { getRoomName } from '../../../base/conference';
 import { MEDIA_TYPE } from '../../../base/media';
 // @ts-ignore
 import { getTrackState } from '../../../base/tracks';
+import { inIframe } from '../../../base/util/iframeUtils';
 // @ts-ignore
 import { stopLocalVideoRecording } from '../../actions.any';
 
@@ -51,6 +52,9 @@ const getMimeType = (): string => {
 
 const VIDEO_BIT_RATE = 2500000; // 2.5Mbps in bits
 
+// Lazily initialize.
+let preferredMediaType: string;
+
 const LocalRecordingManager: ILocalRecordingManager = {
     recordingData: [],
     recorder: undefined,
@@ -58,8 +62,15 @@ const LocalRecordingManager: ILocalRecordingManager = {
     audioContext: undefined,
     audioDestination: undefined,
     roomName: '',
-    mediaType: getMimeType(),
     totalSize: 1073741824, // 1GB in bytes
+
+    get mediaType() {
+        if (!preferredMediaType) {
+            preferredMediaType = getMimeType();
+        }
+
+        return preferredMediaType;
+    },
 
     /**
      * Initializes audio context used for mixing audio tracks.
@@ -135,7 +146,7 @@ const LocalRecordingManager: ILocalRecordingManager = {
     async startLocalRecording(store) {
         const { dispatch, getState } = store;
         // @ts-ignore
-        const supportsCaptureHandle = Boolean(navigator.mediaDevices.setCaptureHandleConfig);
+        const supportsCaptureHandle = Boolean(navigator.mediaDevices.setCaptureHandleConfig) && !inIframe();
         const tabId = uuidV4();
 
         if (supportsCaptureHandle) {
@@ -150,8 +161,13 @@ const LocalRecordingManager: ILocalRecordingManager = {
         // @ts-ignore
         const gdmStream = await navigator.mediaDevices.getDisplayMedia({
             // @ts-ignore
-            video: { displaySurface: 'browser' },
-            audio: true
+            video: { displaySurface: 'browser', frameRate: 30 },
+            audio: {
+                autoGainControl: false,
+                channelCount: 2,
+                echoCancellation: false,
+                noiseSuppression: false
+            }
         });
         // @ts-ignore
         const isBrowser = gdmStream.getVideoTracks()[0].getSettings().displaySurface === 'browser';

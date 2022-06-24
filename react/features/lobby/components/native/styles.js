@@ -15,18 +15,17 @@ export default {
 
     buttonStylesBorderless: {
         iconStyle: {
-            backgroundColor: BaseTheme.palette.action02Active,
             color: BaseTheme.palette.icon01,
             fontSize: 24
         },
         style: {
-            backgroundColor: BaseTheme.palette.action02Active,
             flexDirection: 'row',
             justifyContent: 'center',
             marginHorizontal: BaseTheme.spacing[3],
             height: 24,
             width: 24
-        }
+        },
+        underlayColor: 'transparent'
     },
 
     lobbyChatWrapper: {
@@ -57,37 +56,41 @@ export default {
     },
 
     contentWrapper: {
-        backgroundColor: BaseTheme.palette.ui02,
         flex: 1
     },
 
-    contentWide: {
-        backgroundColor: BaseTheme.palette.ui02,
+    contentWrapperWide: {
         flex: 1,
         flexDirection: 'row'
     },
 
     largeVideoContainer: {
-        alignItems: 'center',
-        display: 'flex',
-        justifyContent: 'center',
         minHeight: '50%'
     },
 
     largeVideoContainerWide: {
         height: '100%',
+        marginRight: 'auto',
+        position: 'absolute',
         width: '50%'
     },
 
     contentContainer: {
+        alignSelf: 'center',
         display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center'
+        justifyContent: 'center',
+        minHeight: '50%',
+        paddingHorizontal: BaseTheme.spacing[3],
+        width: 400
     },
 
     contentContainerWide: {
+        alignItems: 'center',
+        height: '100%',
         justifyContent: 'center',
-        marginHorizontal: BaseTheme.spacing[2],
+        left: '50%',
+        paddingHorizontal: BaseTheme.spacing[3],
+        position: 'absolute',
         width: '50%'
     },
 
@@ -96,21 +99,13 @@ export default {
         display: 'flex',
         flexDirection: 'row',
         justifyContent: 'center',
-        marginTop: BaseTheme.spacing[4]
+        marginTop: BaseTheme.spacing[3]
     },
 
     toolboxContainerWide: {
         flexDirection: 'row',
         justifyContent: 'center',
-        marginTop: BaseTheme.spacing[4]
-    },
-
-    dialogTitle: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        margin: 'auto',
-        marginVertical: BaseTheme.spacing[3],
-        textAlign: 'center'
+        marginTop: BaseTheme.spacing[3]
     },
 
     displayNameText: {
@@ -128,14 +123,22 @@ export default {
         fontSize: 16
     },
 
+    formWrapper: {
+        alignSelf: 'stretch',
+        justifyContent: 'center'
+    },
+
     field: {
+        alignSelf: 'stretch',
         backgroundColor: BaseTheme.palette.field02,
         borderColor: SECONDARY_COLOR,
         borderRadius: BaseTheme.shape.borderRadius,
         borderWidth: 2,
         height: BaseTheme.spacing[7],
-        marginHorizontal: BaseTheme.spacing[3],
-        padding: BaseTheme.spacing[2]
+        marginTop: BaseTheme.spacing[3],
+        marginHorizontal: 12,
+        padding: BaseTheme.spacing[2],
+        textAlign: 'center'
     },
 
     fieldError: {
@@ -147,28 +150,17 @@ export default {
     fieldLabel: {
         ...BaseTheme.typography.heading6,
         color: BaseTheme.palette.text01,
-        marginVertical: BaseTheme.spacing[4],
         textAlign: 'center'
-    },
-
-    formWrapper: {
-        alignSelf: 'stretch'
     },
 
     standardButtonWrapper: {
         alignSelf: 'stretch',
-        marginHorizontal: BaseTheme.spacing[3]
-    },
-
-    joiningContainer: {
-        alignItems: 'center',
-        display: 'flex',
-        justifyContent: 'center'
+        marginHorizontal: 12
     },
 
     joiningMessage: {
         color: BaseTheme.palette.text01,
-        marginBottom: BaseTheme.spacing[2],
+        marginHorizontal: BaseTheme.spacing[3],
         textAlign: 'center'
     },
 
@@ -179,7 +171,7 @@ export default {
     },
 
     loadingIndicator: {
-        marginVertical: BaseTheme.spacing[4]
+        marginBottom: BaseTheme.spacing[4]
     },
 
     participantBox: {
@@ -194,12 +186,12 @@ export default {
 
     primaryButton: {
         backgroundColor: BaseTheme.palette.action01,
-        marginTop: BaseTheme.spacing[4]
+        marginTop: BaseTheme.spacing[3]
     },
 
     primaryButtonDisabled: {
         backgroundColor: BaseTheme.palette.action03Disabled,
-        marginTop: BaseTheme.spacing[4]
+        marginTop: BaseTheme.spacing[3]
     },
 
     primaryButtonText: {

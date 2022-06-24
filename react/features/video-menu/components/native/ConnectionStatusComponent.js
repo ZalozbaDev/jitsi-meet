@@ -1,20 +1,16 @@
-// @flow
-
 import React, { Component } from 'react';
 import { Text, View } from 'react-native';
 import { withTheme } from 'react-native-paper';
 
-
 import { Avatar } from '../../../base/avatar';
-import { ColorSchemeRegistry } from '../../../base/color-scheme';
 import { getSourceNameSignalingFeatureFlag } from '../../../base/config';
-import { BottomSheet, isDialogOpen, hideDialog } from '../../../base/dialog';
+import { BottomSheet, hideSheet } from '../../../base/dialog';
+import { bottomSheetStyles } from '../../../base/dialog/components/native/styles';
 import { translate } from '../../../base/i18n';
 import { IconArrowDownLarge, IconArrowUpLarge } from '../../../base/icons';
 import { getParticipantDisplayName } from '../../../base/participants';
 import { BaseIndicator } from '../../../base/react';
 import { connect } from '../../../base/redux';
-import { StyleType } from '../../../base/styles';
 import { getSourceNameByParticipantId } from '../../../base/tracks';
 import statsEmitter from '../../../connection-indicator/statsEmitter';
 
@@ -42,11 +38,6 @@ export type Props = {
      * The ID of the participant that this button is supposed to pin.
      */
     participantID: string,
-
-    /**
-     * The color-schemed stylesheet of the BottomSheet.
-     */
-    _bottomSheetStyles: StyleType,
 
     /**
      * True if the menu is currently open, false otherwise.
@@ -93,9 +84,6 @@ type State = {
     connectionString: string
 };
 
-// eslint-disable-next-line prefer-const
-let ConnectionStatusComponent_;
-
 /**
  * Class to implement a popup menu that show the connection statistics.
  */
@@ -132,9 +120,9 @@ class ConnectionStatusComponent extends Component<Props, State> {
      * Implements React's {@link Component#render()}.
      *
      * @inheritdoc
-     * @returns {React$Node}
+     * @returns {ReactNode}
      */
-    render(): React$Node {
+    render() {
         const { t, theme } = this.props;
         const { palette } = theme;
 
@@ -408,8 +396,6 @@ class ConnectionStatusComponent extends Component<Props, State> {
         }
     }
 
-    _onCancel: () => boolean;
-
     /**
      * Callback to hide the {@code ConnectionStatusComponent}.
      *
@@ -425,16 +411,8 @@ class ConnectionStatusComponent extends Component<Props, State> {
                 this.props._sourceName, this._onStatsUpdated);
         }
 
-        if (this.props._isOpen) {
-            this.props.dispatch(hideDialog(ConnectionStatusComponent_));
-
-            return true;
-        }
-
-        return false;
+        this.props.dispatch(hideSheet());
     }
-
-    _renderMenuHeader: () => React$Element<any>;
 
     /**
      * Function to render the menu's header.
@@ -442,12 +420,12 @@ class ConnectionStatusComponent extends Component<Props, State> {
      * @returns {React$Element}
      */
     _renderMenuHeader() {
-        const { _bottomSheetStyles, participantID } = this.props;
+        const { participantID } = this.props;
 
         return (
             <View
                 style = { [
-                    _bottomSheetStyles.sheet,
+                    bottomSheetStyles.sheet,
                     styles.participantNameContainer ] }>
                 <Avatar
                     participantId = { participantID }
@@ -472,14 +450,10 @@ function _mapStateToProps(state, ownProps) {
     const { participantID } = ownProps;
 
     return {
-        _bottomSheetStyles: ColorSchemeRegistry.get(state, 'BottomSheet'),
-        _isOpen: isDialogOpen(state, ConnectionStatusComponent_),
         _participantDisplayName: getParticipantDisplayName(state, participantID),
         _sourceNameSignalingEnabled: getSourceNameSignalingFeatureFlag(state),
         _sourceName: getSourceNameByParticipantId(state, ownProps.participantId)
     };
 }
 
-ConnectionStatusComponent_ = translate(connect(_mapStateToProps)(withTheme(ConnectionStatusComponent)));
-
-export default ConnectionStatusComponent_;
+export default translate(connect(_mapStateToProps)(withTheme(ConnectionStatusComponent)));

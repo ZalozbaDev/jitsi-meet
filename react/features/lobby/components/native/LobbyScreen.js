@@ -9,11 +9,8 @@ import { LoadingIndicator } from '../../../base/react';
 import { connect } from '../../../base/redux';
 import { ASPECT_RATIO_NARROW } from '../../../base/responsive-ui';
 import BaseTheme from '../../../base/ui/components/BaseTheme';
-import InviteButton
-    from '../../../invite/components/add-people-dialog/native/InviteButton';
+import { BrandingImageBackground } from '../../../dynamic-branding';
 import { LargeVideo } from '../../../large-video/components';
-import HeaderNavigationButton
-    from '../../../mobile/navigation/components/HeaderNavigationButton';
 import { navigate }
     from '../../../mobile/navigation/components/lobby/LobbyNavigationContainerRef';
 import { screen } from '../../../mobile/navigation/routes';
@@ -39,56 +36,37 @@ type Props = AbstractProps & {
  */
 class LobbyScreen extends AbstractLobbyScreen<Props> {
     /**
-     * Implements React's {@link Component#componentDidMount()}. Invoked
-     * immediately after this component is mounted.
-     *
-     * @inheritdoc
-     * @returns {void}
-     */
-    componentDidMount() {
-        const { navigation, t } = this.props;
-
-        navigation.setOptions({
-            headerLeft: () => (
-                <HeaderNavigationButton
-                    label = { t('dialog.Cancel') }
-                    onPress = { this._onCancel } />
-            )
-        });
-    }
-
-    /**
      * Implements {@code PureComponent#render}.
      *
      * @inheritdoc
      */
     render() {
         const { _aspectRatio } = this.props;
-        let contentStyles;
-        let largeVideoContainerStyles;
+        let contentWrapperStyles;
         let contentContainerStyles;
+        let largeVideoContainerStyles;
 
         if (_aspectRatio === ASPECT_RATIO_NARROW) {
+            contentWrapperStyles = styles.contentWrapper;
             largeVideoContainerStyles = styles.largeVideoContainer;
             contentContainerStyles = styles.contentContainer;
         } else {
-            contentStyles = styles.contentWide;
+            contentWrapperStyles = styles.contentWrapperWide;
             largeVideoContainerStyles = styles.largeVideoContainerWide;
             contentContainerStyles = styles.contentContainerWide;
         }
 
         return (
             <JitsiScreen
-                safeAreaInsets = { [ 'right' ] }
-                style = { styles.contentWrapper }>
-                <View style = { contentStyles }>
-                    <View style = { largeVideoContainerStyles }>
-                        <LargeVideo />
-                    </View>
-                    <View style = { contentContainerStyles }>
-                        { this._renderContent() }
-                        { this._renderToolbarButtons() }
-                    </View>
+                safeAreaInsets = { [ 'left' ] }
+                style = { contentWrapperStyles }>
+                <BrandingImageBackground />
+                <View style = { largeVideoContainerStyles }>
+                    <LargeVideo />
+                </View>
+                <View style = { contentContainerStyles }>
+                    { this._renderContent() }
+                    { this._renderToolbarButtons() }
                 </View>
             </JitsiScreen>
         );
@@ -137,7 +115,7 @@ class LobbyScreen extends AbstractLobbyScreen<Props> {
      */
     _renderJoining() {
         return (
-            <View style = { styles.formWrapper }>
+            <View>
                 <LoadingIndicator
                     color = { BaseTheme.palette.icon01 }
                     style = { styles.loadingIndicator } />
@@ -159,15 +137,11 @@ class LobbyScreen extends AbstractLobbyScreen<Props> {
         const { displayName } = this.state;
 
         return (
-            <View style = { styles.formWrapper }>
-                <Text style = { styles.fieldLabel }>
-                    { t('lobby.nameField') }
-                </Text>
-                <TextInput
-                    onChangeText = { this._onChangeDisplayName }
-                    style = { styles.field }
-                    value = { displayName } />
-            </View>
+            <TextInput
+                onChangeText = { this._onChangeDisplayName }
+                placeholder = { t('lobby.nameField') }
+                style = { styles.field }
+                value = { displayName } />
         );
     }
 
@@ -190,13 +164,11 @@ class LobbyScreen extends AbstractLobbyScreen<Props> {
 
         return (
             <View style = { styles.formWrapper }>
-                <Text style = { styles.fieldLabel }>
-                    { this.props.t('lobby.passwordField') }
-                </Text>
                 <TextInput
                     autoCapitalize = 'none'
                     autoCompleteType = 'off'
                     onChangeText = { this._onChangePassword }
+                    placeholder = { t('lobby.passwordField') }
                     secureTextEntry = { true }
                     style = { styles.field }
                     value = { this.state.password } />
@@ -262,8 +234,6 @@ class LobbyScreen extends AbstractLobbyScreen<Props> {
                 <AudioMuteButton
                     styles = { styles.buttonStylesBorderless } />
                 <VideoMuteButton
-                    styles = { styles.buttonStylesBorderless } />
-                <InviteButton
                     styles = { styles.buttonStylesBorderless } />
             </View>
         );
