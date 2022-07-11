@@ -41,14 +41,20 @@ export default {
         width: BaseTheme.spacing[6]
     },
 
+    headerNavigationIcon: {
+        marginLeft: 12
+    },
+
     headerNavigationText: {
         color: BaseTheme.palette.text01,
+        marginLeft: BaseTheme.spacing[3],
         fontSize: HEADER_ACTION_BUTTON_SIZE
     },
 
     headerNavigationTextBold: {
         ...BaseTheme.typography.labelButton,
         color: BaseTheme.palette.text01,
+        marginRight: BaseTheme.spacing[3],
         fontSize: HEADER_ACTION_BUTTON_SIZE
     },
 
@@ -79,18 +85,8 @@ export default {
     },
 
     lonelyButton: {
-        alignItems: 'center',
-        backgroundColor: BaseTheme.palette.action01,
-        borderRadius: 24,
-        flexDirection: 'row',
-        height: BaseTheme.spacing[6],
-        justifyContent: 'space-around',
-        paddingHorizontal: 12
-    },
-
-    lonelyButtonComponents: {
-        color: BaseTheme.palette.text01,
-        marginHorizontal: 6
+        borderRadius: BaseTheme.spacing[4],
+        paddingHorizontal: BaseTheme.spacing[1]
     },
 
     lonelyMeetingContainer: {
@@ -170,7 +166,7 @@ export default {
     },
 
     roomTimerView: {
-        backgroundColor: BaseTheme.palette.action02,
+        backgroundColor: BaseTheme.palette.ui03,
         borderRadius: 3,
         justifyContent: 'center',
         minWidth: 50

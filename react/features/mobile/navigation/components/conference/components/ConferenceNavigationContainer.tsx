@@ -1,5 +1,5 @@
 import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { createStackNavigator } from '@react-navigation/stack';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
@@ -7,7 +7,7 @@ import { useSelector } from 'react-redux';
 import { Chat, ChatAndPolls } from '../../../../../chat';
 
 import Conference from '../../../../../conference/components/native/Conference';
-import CarmodeTab from '../../../../../conference/components/native/carmode/Conference';
+import CarMode from '../../../../../conference/components/native/carmode/CarMode';
 import { getDisablePolls } from '../../../../../conference/functions';
 import { SharedDocument } from '../../../../../etherpad';
 import { GifsMenu } from '../../../../../gifs/components';
@@ -46,7 +46,7 @@ import {
     conferenceNavigationRef
 } from '../ConferenceNavigationContainerRef';
 
-const ConferenceStack = createNativeStackNavigator();
+const ConferenceStack = createStackNavigator();
 
 const ConferenceNavigationContainer = () => {
     const isPollsDisabled = useSelector(getDisablePolls);
@@ -147,7 +147,7 @@ const ConferenceNavigationContainer = () => {
                         title: t('documentSharing.title')
                     }} />
                 <ConferenceStack.Screen
-                    component = { CarmodeTab }
+                    component = { CarMode }
                     name = { screen.conference.carmode }
                     options = {{
                         ...carmodeScreenOptions,
