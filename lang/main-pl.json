@@ -78,7 +78,6 @@
     },
     "carmode": {
         "actions": {
-            "leaveMeeting": " Opuść spotkanie",
             "selectSoundDevice": "Wybierz urządzenie dźwiękowe"
         },
         "labels": {
@@ -97,6 +96,7 @@
         "messageAccessibleTitleMe": "mówię:",
         "messageTo": "Prywatna wiadomość do {{recipient}}",
         "messagebox": "Wpisz wiadomość",
+        "newMessages": "",
         "nickname": {
             "popover": "Wybierz swój nick",
             "title": "Wpisz swoją nazwę, aby użyć rozmowy",
@@ -514,6 +514,10 @@
         "toggleScreensharing": "Przełącz pomiędzy kamerą i wspóldzieleniem ekranu",
         "toggleShortcuts": "Wyświetl lub ukryj skróty klawiaturowe",
         "videoMute": "Uruchom lub zatrzymaj kamerę"
+    },
+    "largeVideo": {
+        "screenIsShared": "",
+        "showMeWhatImSharing": ""
     },
     "liveStreaming": {
         "busy": "Pracujemy nad zwolnieniem zasobów transmisyjnych. Spróbuj ponownie za kilka minut.",
@@ -1059,6 +1063,7 @@
             "document": "Przełączanie wspólnego dokumentu",
             "download": "Pobierz nasze aplikacje",
             "embedMeeting": "Osadź spotkanie",
+            "endConference": "",
             "expand": "Rozwiń",
             "feedback": "Zostaw swoją opinię",
             "fullScreen": "Przełączanie trybu pełnoekranowego",
@@ -1069,6 +1074,7 @@
             "invite": "Zaproś uczestników",
             "kick": "Usuń uczestnika",
             "laugh": "Śmiech",
+            "leaveConference": "",
             "like": "Kciuk w górę",
             "linkToSalesforce": "Link do Salesforce",
             "lobbyButton": "Włącz/wyłącz tryb lobby",
@@ -1131,6 +1137,7 @@
         "download": "Pobierz nasze aplikacje",
         "e2ee": "Szyfrowanie End-to-End",
         "embedMeeting": "Osadź spotkanie",
+        "endConference": "",
         "enterFullScreen": "Wyświetl na pełnym ekranie",
         "enterTileView": "Wyświetl widok kafelkowy",
         "exitFullScreen": "Zamknij pełny ekran",
@@ -1143,6 +1150,7 @@
         "joinBreakoutRoom": "Dołącz do pokoju podgrupy",
         "laugh": "Śmiech",
         "leaveBreakoutRoom": "Opuść pokój spotkań",
+        "leaveConference": "",
         "like": "Kciuk w górę",
         "linkToSalesforce": "Link do Salesforce",
         "lobbyButtonDisable": "Wyłącz tryb lobby",
@@ -1209,6 +1217,8 @@
         "pending": "Przygotowanie do transkrypcji spotkania...",
         "start": "Rozpocznij wyświetlanie napisów",
         "stop": "Zatrzymaj wyświetlanie napisów",
+        "subtitles": "",
+        "subtitlesOff": "",
         "tr": "TR"
     },
     "userMedia": {

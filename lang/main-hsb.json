@@ -11,7 +11,6 @@
         "defaultEmail": "Waša standardna e-mejl",
         "disabled": "Wy njemóžeće žanych wobdźělnikow přeprosyć.",
         "failedToAdd": "zmylk při přidaću wobdźělnikow",
-        "footerText": "Zawołanje je deaktiwěrowane.",
         "googleEmail": "Google-e-mejl",
         "inviteMoreHeader": "Wy sće sam/a w posedźenju",
         "inviteMoreMailSubject": "so na posedźenju {{appName}} wobdźělić",
@@ -97,6 +96,7 @@
         "messageAccessibleTitleMe": "ja praju:",
         "messageTo": "priwatna powěsć na {{recipient}}",
         "messagebox": "powěsć zapisać",
+        "newMessages": "",
         "nickname": {
             "popover": "wuzwolće mjeno (alias)",
             "title": "zapodajće aliasa za chat",
@@ -115,6 +115,7 @@
     },
     "chromeExtensionBanner": {
         "buttonText": "rozšěrjenje za Chrome instalować",
+        "buttonTextEdge": "",
         "close": "začinić",
         "dontShowAgain": "pokiw wjace njepokazać",
         "installExtensionText": "Instalujće rozšěrjenje za integraciju protyki Google a Office 365"
@@ -206,6 +207,9 @@
         "selectADevice": "nastroj wuzwolić",
         "testAudio": "zwuk testować"
     },
+    "dialIn": {
+        "screenTitle": ""
+    },
     "dialOut": {
         "statusMessage": "nětkle je {{status}}"
     },
@@ -281,7 +285,6 @@
         "linkMeetingTitle": "konferencu ze Salesforce zwjazać",
         "liveStreaming": "live-streaming",
         "liveStreamingDisabledBecauseOfActiveRecordingTooltip": "za čas nahrawanja njemóžne",
-        "liveStreamingDisabledTooltip": "Startowanje live-streama je deaktiwěrowane.",
         "localUserControls": "lokalna kontrola",
         "lockMessage": "Konferenca njedaše so zawrěć.",
         "lockRoom": "konferencu$t(lockRoomPassword) přidać",
@@ -336,7 +339,6 @@
         "recentlyUsedObjects": "sposledy wužiwane objekty",
         "recording": "nahrawanje",
         "recordingDisabledBecauseOfActiveLiveStreamingTooltip": "w času live-streama njemóžne",
-        "recordingDisabledTooltip": "Start nahrawanja deaktiwěrowany.",
         "rejoinNow": "nětko znowa přistupić",
         "remoteControlAllowedMessage": "{{user}} ja naprašenje wo dalokowodźenju přiwzała/a!",
         "remoteControlDeniedMessage": "{{user}} je naprašenje wo dalokowodźenju wotpokazał/a!",
@@ -513,6 +515,10 @@
         "toggleShortcuts": "tastowe skrótšenki pokazać abo schować",
         "videoMute": "kameru startować abo stopować"
     },
+    "largeVideo": {
+        "screenIsShared": "",
+        "showMeWhatImSharing": ""
+    },
     "liveStreaming": {
         "busy": "Resursy za streaming so přihotuja. Prošu spytajće za někotre mjeńšiny znowa.",
         "busyTitle": "Wšitke instancy za streaming so wužiwaja.",
@@ -678,6 +684,10 @@
         "newDeviceAction": "wužiwać",
         "newDeviceAudioTitle": "nowy awdijowy nastroj spóznaty",
         "newDeviceCameraTitle": "nowa kamera spóznata",
+        "noiseSuppressionDesktopAudioDescription": "",
+        "noiseSuppressionFailedTitle": "",
+        "noiseSuppressionNoTrackDescription": "",
+        "noiseSuppressionStereoDescription": "",
         "oldElectronClientDescription1": "Wužiwaće staru wersiju Jitsi-Meet-klienta. Tuta ma znate słabosće. Prošu aktualizujće na našu.",
         "oldElectronClientDescription2": "aktualnu wersiju",
         "oldElectronClientDescription3": "!",
@@ -813,6 +823,7 @@
         "initiated": "wolenje startowane",
         "joinAudioByPhone": "so přez telefon wobdźělić",
         "joinMeeting": "konferency přistupić",
+        "joinMeetingInLowBandwidthMode": "",
         "joinWithoutAudio": "bjez zwuka přistupić",
         "keyboardShortcuts": "tastaturowe skrótšenki dowolić",
         "linkCopied": "link kopěrowany",
@@ -888,12 +899,20 @@
         "limitNotificationDescriptionWeb": "Wulkeje potrjeby dla je Waše nahrawanje na {{limit}} mjeń. wobmjezowane. Za njewobmjezowane nahrawanje wužiwajće prošu <a href={{url}} rel='noopener noreferrer' target='_blank'>{{app}}</a>.",
         "linkGenerated": "link na nahrawanje bu kreěrowany",
         "live": "LIVE",
+        "localRecordingNoNotificationWarning": "",
+        "localRecordingNoVideo": "",
+        "localRecordingStartWarning": "",
+        "localRecordingStartWarningTitle": "",
+        "localRecordingVideoStop": "",
+        "localRecordingVideoWarning": "",
         "localRecordingWarning": "Kedźbujće na to, aktualny tab za prawe widejo a awdijo wužiwać. Nahrawanje je wokomiknje hač do 1GB - někak 100 mjeńšinow - móžne.",
         "loggedIn": "přizjewjeny/a jako {{userName}} ",
+        "noStreams": "",
         "off": "nahrawanje stopowane",
         "offBy": "{{name}} stopuje nahrawanje",
         "on": "nahrawanje",
         "onBy": "{{name}} startuje nahrawanje",
+        "onlyRecordSelf": "",
         "pending": "nahrawanje konferency so přihotuje…",
         "rec": "NAHR",
         "saveLocalRecording": "nahrawanje lokalnje składować",
@@ -920,6 +939,7 @@
         "insecureRoomNameWarning": "Mjeno ruma je njewěste. Njewitani wobdźělnicy móhli Wašej konferency přistupić."
     },
     "settings": {
+        "buttonLabel": "",
         "calendar": {
             "about": "Integracija protyki {{appName}} so wužiwa, zo by wěsty přistup k Wašej protyce a wučitanje terminow móžne było. ",
             "disconnect": "přetorhnjene",
@@ -943,10 +963,12 @@
         "name": "mjeno",
         "noDevice": "žadyn",
         "participantJoined": "nowy wobdźělnik",
+        "participantKnocking": "",
         "participantLeft": "Wobdźělnik je konferencu wopušćił.",
         "playSounds": "zwuk za pokazki aktiwěrowany",
         "reactions": "interakcije",
         "sameAsSystem": "kaž system ({{label}})",
+        "screenTitle": "",
         "selectAudioOutput": "wudaće awdija",
         "selectCamera": "kamera",
         "selectMic": "mikrofon",
@@ -972,13 +994,19 @@
         "disableCrashReportingWarning": "Chceće rozprawy wo zwrěšćenjach woprawdźe deaktiwěrować? Tute nastajenje budźe hakle po nowostarće app skutkować.",
         "disableP2P": "end-to-end - modus deaktiwěrować",
         "displayName": "pokazane mjeno",
+        "displayNamePlaceholderText": "",
         "email": "e-mejl",
+        "goTo": "",
         "header": "nastajenja",
+        "help": "",
+        "links": "",
+        "privacy": "",
         "profileSection": "profil",
         "serverURL": "URL serwera",
         "showAdvanced": "rozšěrene nastajenja pokazać",
         "startWithAudioMuted": "němy/a přistupić",
         "startWithVideoMuted": "bjez wideja přistupić",
+        "terms": "",
         "version": "wersija"
     },
     "share": {
@@ -1016,6 +1044,7 @@
     "termsView": {
         "header": "wuměnjenja za wužiwanje"
     },
+    "toggleTopPanelLabel": "",
     "toolbar": {
         "Settings": "nastajenja",
         "accessibilityLabel": {
@@ -1034,6 +1063,7 @@
             "document": "dźěleny dokument začinić",
             "download": "naše aplikacije downloadować ",
             "embedMeeting": "konferencu integrować",
+            "endConference": "",
             "expand": "rozšěrić",
             "feedback": "feedback zawostajić",
             "fullScreen": "połny wobraz nastajić/hasnyć",
@@ -1058,6 +1088,7 @@
             "muteEveryoneElse": "wšěch druhich němych šaltować",
             "muteEveryoneElsesVideoStream": "wšitke druhe kamery hasnyć",
             "muteEveryonesVideoStream": "wšitke kamery hasnyć",
+            "noiseSuppression": "",
             "participants": "přitomni",
             "pip": "modus wobraz-we-wobrazu zapnyć/hasnyć ",
             "privateMessage": "priwatne powěsće pósłać",
@@ -1098,6 +1129,7 @@
         "clap": "placać",
         "closeChat": "chat začinić",
         "closeReactionsMenu": "meni za interakcije začinić",
+        "disableNoiseSuppression": "",
         "disableReactionSounds": "Móžeće zwuki za interakcije za tutu konferencu deaktiwěrować.",
         "dock": "fiksěrować",
         "documentClose": "dźěleny dokument začinić",
@@ -1105,6 +1137,7 @@
         "download": "naše aplikacije downloadować",
         "e2ee": "zaklučowanje end-to-end",
         "embedMeeting": "konferencu integrować",
+        "endConference": "",
         "enterFullScreen": "połny wobraz",
         "enterTileView": " kachlicowy napohlad zapnyć ",
         "exitFullScreen": "połny wobraz wopušćić",
@@ -1135,6 +1168,7 @@
         "noAudioSignalDialInDesc": "Móžeće so tež přez čisło zawolić:",
         "noAudioSignalDialInLinkDesc": "čisła za zawolenje",
         "noAudioSignalTitle": "Njepřińdźe žadyn signal wot Wašeho mikrofona!",
+        "noiseSuppression": "",
         "noisyAudioInputDesc": " Waš mikrofon je jara mylacy! Přemyslujće prošu, hač nochceće jón němy šaltować abo wuměnić.",
         "noisyAudioInputTitle": "Waš mikrofon je jara mylacy!",
         "openChat": "chat wočinić",
@@ -1183,6 +1217,8 @@
         "pending": " transkriběrowanje konferency so přihotuje…",
         "start": "pokazku podtitulow startować",
         "stop": " pokazku podtitulow stopować ",
+        "subtitles": "",
+        "subtitlesOff": "",
         "tr": "TR"
     },
     "userMedia": {
