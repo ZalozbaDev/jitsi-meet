@@ -12,6 +12,9 @@ COUNTRIES_DIR := node_modules/i18n-iso-countries/langs
 # we skip making Makefile exists for updating browserify modules when developing
 override_dh_auto_build:
 
+override_dh_builddeb:
+	dh_builddeb -- -Zgzip
+	
 override_dh_install: $(LANGUAGES)
 	dh_installdirs
 	dh_install
