@@ -75,6 +75,11 @@ const _LANGUAGES = {
         main: require('../../../../lang/main-hr')
     },
 
+    // Upper Sorbian
+    'hsb': {
+        main: require('../../../../lang/main-hsb')
+    },
+
     // Hungarian
     'hu': {
         main: require('../../../../lang/main-hu')
